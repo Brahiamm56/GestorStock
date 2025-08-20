@@ -1,52 +1,11 @@
 <template>
   <div class="dashboard">
-    <el-container>
-      <el-header>
-        <div class="header-content">
-          <h1>Dashboard</h1>
-          <div class="user-info">
-            <span>Bienvenido, {{ authStore.user?.name }}</span>
-            <el-button @click="authStore.logout" type="text">Cerrar Sesión</el-button>
-          </div>
-        </div>
-      </el-header>
-      
-      <el-container>
-        <el-aside width="250px">
-          <el-menu
-            :default-active="$route.path"
-            router
-            class="sidebar-menu"
-          >
-            <el-menu-item index="/dashboard">
-              <el-icon><DataBoard /></el-icon>
-              <span>Dashboard</span>
-            </el-menu-item>
-            
-            <el-menu-item index="/products">
-              <el-icon><Goods /></el-icon>
-              <span>Productos</span>
-            </el-menu-item>
-            
-            <el-menu-item index="/sales">
-              <el-icon><ShoppingCart /></el-icon>
-              <span>Ventas</span>
-            </el-menu-item>
-            
-            <el-menu-item v-if="authStore.isAdmin" index="/users">
-              <el-icon><User /></el-icon>
-              <span>Usuarios</span>
-            </el-menu-item>
-            
-            <el-menu-item index="/profile">
-              <el-icon><Setting /></el-icon>
-              <span>Perfil</span>
-            </el-menu-item>
-          </el-menu>
-        </el-aside>
-        
-        <el-main>
-          <div class="dashboard-content">
+    <div class="dashboard-header">
+      <h1>Dashboard</h1>
+      <p>Bienvenido, {{ authStore.user?.name }}</p>
+    </div>
+    
+    <div class="dashboard-content">
             <el-row :gutter="20">
               <el-col :span="6">
                 <el-card>
@@ -136,10 +95,7 @@
                 </el-card>
               </el-col>
             </el-row>
-          </div>
-        </el-main>
-      </el-container>
-    </el-container>
+    </div>
   </div>
 </template>
 
@@ -147,6 +103,7 @@
 import { ref, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { productService, saleService } from '@/services/api'
+import api from '@/services/api'
 
 export default {
   name: 'Dashboard',
@@ -160,17 +117,26 @@ export default {
       try {
         // Cargar productos con stock bajo
         const lowStockResponse = await productService.getLowStock()
-        lowStockProducts.value = lowStockResponse.data.products.slice(0, 5)
+        lowStockProducts.value = lowStockResponse.data.products?.slice(0, 5) || []
 
         // Cargar ventas recientes
         const salesResponse = await saleService.getAll({ limit: 5 })
-        recentSales.value = salesResponse.data.sales
+        recentSales.value = salesResponse.data.sales || []
 
-        // Cargar estadísticas
-        const statsResponse = await saleService.getStats()
-        stats.value = statsResponse.data
+        // Cargar estadísticas del dashboard
+        const statsResponse = await api.get('/dashboard/stats')
+        if (statsResponse.data.success) {
+          stats.value = statsResponse.data.data
+        }
       } catch (error) {
         console.error('Error al cargar datos del dashboard:', error)
+        // Datos por defecto en caso de error
+        stats.value = {
+          products: { total: 0, lowStock: 0 },
+          sales: { today: 0, month: 0, pending: 0 },
+          revenue: { today: 0, month: 0 },
+          users: { active: 0 }
+        }
       }
     }
 
@@ -190,39 +156,31 @@ export default {
 
 <style scoped>
 .dashboard {
-  height: 100vh;
+  min-height: 100%;
 }
 
-.el-header {
-  background-color: #fff;
-  border-bottom: 1px solid #e4e7ed;
-  padding: 0 20px;
+.dashboard-header {
+  margin-bottom: 24px;
 }
 
-.header-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  height: 100%;
+.dashboard-header h1 {
+  margin: 0 0 8px 0;
+  font-size: 28px;
+  font-weight: 600;
+  color: #303133;
 }
 
-.user-info {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.el-aside {
-  background-color: #fff;
-  border-right: 1px solid #e4e7ed;
-}
-
-.sidebar-menu {
-  border-right: none;
+.dashboard-header p {
+  margin: 0;
+  color: #606266;
+  font-size: 16px;
 }
 
 .dashboard-content {
-  padding: 20px;
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .stat-card {

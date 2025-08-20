@@ -109,4 +109,17 @@ export const authService = {
   updateProfile: (data) => api.put('/auth/profile', data)
 }
 
+export const uploadService = {
+  uploadImage: (file) => {
+    const formData = new FormData()
+    formData.append('image', file)
+    
+    return api.post('/upload/image', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
+  }
+}
+
 export default api
