@@ -88,8 +88,11 @@
           </el-col>
         </el-row>
         
-        <el-form-item label="Imagen URL" prop="image_url">
-          <el-input v-model="form.image_url" placeholder="URL de la imagen" />
+        <el-form-item label="Imagen del Producto" prop="image_url">
+          <ImageUpload 
+            v-model="form.image_url" 
+            @file-selected="handleImageSelected"
+          />
         </el-form-item>
         
         <el-form-item>
@@ -106,11 +109,15 @@
 <script>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { productService } from '@/services/api'
+import { productService, uploadService } from '@/services/api'
 import { toast } from 'vue3-toastify'
+import ImageUpload from '@/components/ImageUpload.vue'
 
 export default {
   name: 'ProductForm',
+  components: {
+    ImageUpload
+  },
   setup() {
     const route = useRoute()
     const router = useRouter()
@@ -161,6 +168,25 @@ export default {
       }
     }
 
+    const handleImageSelected = async (file) => {
+      if (file) {
+        try {
+          loading.value = true
+          const response = await uploadService.uploadImage(file)
+          
+          if (response.data.success) {
+            form.image_url = response.data.data.url
+            toast.success('Imagen subida correctamente')
+          }
+        } catch (error) {
+          console.error('Error al subir imagen:', error)
+          toast.error('Error al subir la imagen')
+        } finally {
+          loading.value = false
+        }
+      }
+    }
+
     const handleSubmit = async () => {
       if (!formRef.value) return
       
@@ -195,7 +221,8 @@ export default {
       rules,
       loading,
       isEditing,
-      handleSubmit
+      handleSubmit,
+      handleImageSelected
     }
   }
 }

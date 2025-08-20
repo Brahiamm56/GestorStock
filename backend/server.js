@@ -4,6 +4,7 @@ const helmet = require('helmet');
 const morgan = require('morgan');
 const compression = require('compression');
 const rateLimit = require('express-rate-limit');
+const path = require('path');
 require('dotenv').config();
 
 const { sequelize } = require('./config/database');
@@ -11,6 +12,8 @@ const authRoutes = require('./routes/auth');
 const productRoutes = require('./routes/products');
 const saleRoutes = require('./routes/sales');
 const userRoutes = require('./routes/users');
+const uploadRoutes = require('./routes/upload');
+const dashboardRoutes = require('./routes/dashboard');
 const { errorHandler } = require('./middleware/errorHandler');
 
 const app = express();
@@ -31,17 +34,41 @@ app.use(compression());
 app.use(morgan('combined'));
 app.use(limiter);
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+  origin: ['http://localhost:3000', 'http://localhost:5173', 'http://127.0.0.1:3000', 'http://127.0.0.1:5173'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
   credentials: true
 }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Logging de todas las requests para debugging
+app.use((req, res, next) => {
+  console.log(`\n=== REQUEST LOG ===`);
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
+  console.log('Headers:', req.headers);
+  if (req.body && Object.keys(req.body).length > 0) {
+    console.log('Body:', req.body);
+  }
+  console.log(`==================\n`);
+  next();
+});
+
+// Servir archivos estáticos (imágenes) con CORS
+app.use('/uploads', (req, res, next) => {
+  res.header('Access-Control-Allow-Origin', 'http://localhost:3000');
+  res.header('Access-Control-Allow-Methods', 'GET');
+  res.header('Access-Control-Allow-Headers', 'Content-Type');
+  next();
+}, express.static(path.join(__dirname, 'uploads')));
 
 // Rutas
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/sales', saleRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/upload', uploadRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 
 // Ruta de salud
 app.get('/api/health', (req, res) => {
@@ -69,7 +96,7 @@ async function startServer() {
     
     // Sincronizar modelos (en desarrollo)
     if (process.env.NODE_ENV === 'development') {
-      await sequelize.sync({ alter: true });
+      await sequelize.sync({ force: false });
       console.log('✅ Modelos sincronizados con la base de datos.');
     }
 

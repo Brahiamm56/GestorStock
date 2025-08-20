@@ -13,52 +13,52 @@ const routes = [
     meta: { requiresGuest: true }
   },
   {
-    path: '/dashboard',
-    name: 'Dashboard',
-    component: () => import('@/views/Dashboard.vue'),
-    meta: { requiresAuth: true }
-  },
-  {
-    path: '/products',
-    name: 'Products',
-    component: () => import('@/views/Products.vue'),
-    meta: { requiresAuth: true }
-  },
-  {
-    path: '/products/new',
-    name: 'NewProduct',
-    component: () => import('@/views/ProductForm.vue'),
-    meta: { requiresAuth: true }
-  },
-  {
-    path: '/products/:id/edit',
-    name: 'EditProduct',
-    component: () => import('@/views/ProductForm.vue'),
-    meta: { requiresAuth: true }
-  },
-  {
-    path: '/sales',
-    name: 'Sales',
-    component: () => import('@/views/Sales.vue'),
-    meta: { requiresAuth: true }
-  },
-  {
-    path: '/sales/new',
-    name: 'NewSale',
-    component: () => import('@/views/SaleForm.vue'),
-    meta: { requiresAuth: true }
-  },
-  {
-    path: '/users',
-    name: 'Users',
-    component: () => import('@/views/Users.vue'),
-    meta: { requiresAuth: true, requiresAdmin: true }
-  },
-  {
-    path: '/profile',
-    name: 'Profile',
-    component: () => import('@/views/Profile.vue'),
-    meta: { requiresAuth: true }
+    path: '/',
+    component: () => import('@/layouts/MainLayout.vue'),
+    meta: { requiresAuth: true },
+    children: [
+      {
+        path: 'dashboard',
+        name: 'Dashboard',
+        component: () => import('@/views/Dashboard.vue')
+      },
+      {
+        path: 'products',
+        name: 'Products',
+        component: () => import('@/views/Products.vue')
+      },
+      {
+        path: 'products/new',
+        name: 'NewProduct',
+        component: () => import('@/views/ProductForm.vue')
+      },
+      {
+        path: 'products/:id/edit',
+        name: 'EditProduct',
+        component: () => import('@/views/ProductForm.vue')
+      },
+      {
+        path: 'sales',
+        name: 'Sales',
+        component: () => import('@/views/Sales.vue')
+      },
+      {
+        path: 'sales/new',
+        name: 'NewSale',
+        component: () => import('@/views/SaleForm.vue')
+      },
+      {
+        path: 'users',
+        name: 'Users',
+        component: () => import('@/views/Users.vue'),
+        meta: { requiresAdmin: true }
+      },
+      {
+        path: 'profile',
+        name: 'Profile',
+        component: () => import('@/views/Profile.vue')
+      }
+    ]
   },
   {
     path: '/:pathMatch(.*)*',

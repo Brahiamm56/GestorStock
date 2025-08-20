@@ -97,6 +97,20 @@ const productController = {
         return res.status(409).json({ error: 'El SKU ya existe' });
       }
 
+      // Buscar el usuario en la base de datos o crear uno temporal
+      let user = await User.findOne({ where: { firebase_uid: req.user.uid } });
+      
+      if (!user) {
+        // Crear usuario temporal si no existe
+        user = await User.create({
+          firebase_uid: req.user.uid,
+          email: req.user.email || 'temp@example.com',
+          name: req.user.email ? req.user.email.split('@')[0] : 'Usuario',
+          role: 'user',
+          is_active: true
+        });
+      }
+
       const product = await Product.create({
         name,
         description,
@@ -107,7 +121,7 @@ const productController = {
         category,
         brand,
         image_url,
-        created_by: req.user.uid
+        created_by: user.id
       });
 
       res.status(201).json({
@@ -152,24 +166,47 @@ const productController = {
     }
   },
 
-  // Eliminar producto (soft delete)
+  // Eliminar producto (soft delete) - CON LOGS EXTENSIVOS
   async deleteProduct(req, res) {
+    console.log(`=== INICIO ELIMINACIÓN PRODUCTO ===`);
+    console.log(`ID recibido: ${req.params.id}`);
+    console.log(`Headers:`, req.headers);
+    console.log(`User:`, req.user);
+    
     try {
       const { id } = req.params;
 
+      // Buscar el producto
       const product = await Product.findByPk(id);
+      console.log(`Producto encontrado:`, product ? `Sí - ${product.name}` : 'No existe');
       
       if (!product) {
-        return res.status(404).json({ error: 'Producto no encontrado' });
+        console.log(`❌ Producto ${id} no encontrado en BD`);
+        return res.status(404).json({ 
+          success: false,
+          error: 'Producto no encontrado' 
+        });
       }
 
+      // Soft delete - marcar como inactivo
       await product.update({ is_active: false });
+      console.log(`✅ Producto ${id} marcado como inactivo exitosamente`);
 
-      res.json({ message: 'Producto eliminado correctamente' });
+      res.json({ 
+        success: true,
+        message: 'Producto eliminado correctamente',
+        deletedId: id
+      });
     } catch (error) {
-      console.error('Error al eliminar producto:', error);
-      res.status(500).json({ error: 'Error interno del servidor' });
+      console.error(`❌ ERROR CRÍTICO al eliminar producto:`, error);
+      res.status(500).json({ 
+        success: false,
+        error: 'Error interno del servidor',
+        details: error.message 
+      });
     }
+    
+    console.log(`=== FIN ELIMINACIÓN PRODUCTO ===`);
   },
 
   // Actualizar stock de producto
