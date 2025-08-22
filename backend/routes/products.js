@@ -5,6 +5,7 @@ const { authenticateToken, requireRole } = require('../middleware/auth');
 
 // Rutas públicas (solo lectura)
 router.get('/', productController.getAllProducts);
+router.get('/categories', productController.getCategories);
 router.get('/low-stock', authenticateToken, productController.getLowStockProducts);
 router.get('/:id', productController.getProductById);
 

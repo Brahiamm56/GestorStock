@@ -91,6 +91,14 @@ const productController = {
         image_url
       } = req.body;
 
+      // Validar categoría
+      const validCategories = ['ENVASES', 'DECORACIÓN', 'SAHUMERIOS'];
+      if (!validCategories.includes(category)) {
+        return res.status(400).json({ 
+          error: 'Categoría inválida. Las categorías válidas son: ENVASES, DECORACIÓN, SAHUMERIOS' 
+        });
+      }
+
       // Verificar si el SKU ya existe
       const existingProduct = await Product.findOne({ where: { sku } });
       if (existingProduct) {
@@ -144,6 +152,16 @@ const productController = {
       
       if (!product) {
         return res.status(404).json({ error: 'Producto no encontrado' });
+      }
+
+      // Validar categoría si se está actualizando
+      if (updateData.category) {
+        const validCategories = ['ENVASES', 'DECORACIÓN', 'SAHUMERIOS'];
+        if (!validCategories.includes(updateData.category)) {
+          return res.status(400).json({ 
+            error: 'Categoría inválida. Las categorías válidas son: ENVASES, DECORACIÓN, SAHUMERIOS' 
+          });
+        }
       }
 
       // Verificar si el SKU ya existe (si se está actualizando)
@@ -277,6 +295,17 @@ const productController = {
       res.json({ products });
     } catch (error) {
       console.error('Error al obtener productos con stock bajo:', error);
+      res.status(500).json({ error: 'Error interno del servidor' });
+    }
+  },
+
+  // Obtener categorías disponibles
+  async getCategories(req, res) {
+    try {
+      const categories = ['ENVASES', 'DECORACIÓN', 'SAHUMERIOS'];
+      res.json({ categories });
+    } catch (error) {
+      console.error('Error al obtener categorías:', error);
       res.status(500).json({ error: 'Error interno del servidor' });
     }
   }
