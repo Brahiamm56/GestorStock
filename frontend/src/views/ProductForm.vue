@@ -72,11 +72,9 @@
           <el-col :span="12">
             <el-form-item label="Categoría" prop="category">
               <el-select v-model="form.category" placeholder="Seleccionar categoría" style="width: 100%">
-                <el-option label="Electrónicos" value="electronics" />
-                <el-option label="Ropa" value="clothing" />
-                <el-option label="Hogar" value="home" />
-                <el-option label="Deportes" value="sports" />
-                <el-option label="Otros" value="others" />
+                <el-option label="ENVASES" value="ENVASES" />
+                <el-option label="DECORACIÓN" value="DECORACIÓN" />
+                <el-option label="SAHUMERIOS" value="SAHUMERIOS" />
               </el-select>
             </el-form-item>
           </el-col>
