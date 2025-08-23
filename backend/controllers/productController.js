@@ -69,7 +69,10 @@ const productController = {
         return res.status(404).json({ error: 'Producto no encontrado' });
       }
 
-      res.json({ product });
+      res.json({ 
+        success: true,
+        product 
+      });
     } catch (error) {
       console.error('Error al obtener producto:', error);
       res.status(500).json({ error: 'Error interno del servidor' });
@@ -133,6 +136,7 @@ const productController = {
       });
 
       res.status(201).json({
+        success: true,
         message: 'Producto creado correctamente',
         product
       });
@@ -175,6 +179,7 @@ const productController = {
       await product.update(updateData);
 
       res.json({
+        success: true,
         message: 'Producto actualizado correctamente',
         product
       });

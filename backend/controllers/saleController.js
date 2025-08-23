@@ -1,5 +1,6 @@
 const { Sale, SaleItem, Product, User } = require('../models');
 const { sequelize } = require('../config/database');
+const { Op } = require('sequelize');
 const PDFDocument = require('pdfkit');
 const fs = require('fs');
 const path = require('path');
@@ -104,6 +105,9 @@ const saleController = {
     const transaction = await sequelize.transaction();
     
     try {
+      console.log('📝 Datos recibidos para crear venta:', req.body);
+      console.log('👤 Usuario autenticado:', req.user);
+      
       const {
         customer_dni,
         customer_name,
@@ -146,6 +150,28 @@ const saleController = {
         });
       }
 
+      // Verificar si el usuario existe en la base de datos
+      const { User } = require('../models');
+      let soldBy = null;
+      
+      if (req.user?.uid) {
+        const existingUser = await User.findOne({ where: { firebase_uid: req.user.uid } });
+        if (existingUser) {
+          soldBy = existingUser.id;
+        } else {
+          console.log('⚠️ Usuario no encontrado en BD, creando usuario...');
+          // Crear usuario si no existe
+          const newUser = await User.create({
+            firebase_uid: req.user.uid,
+            email: req.user.email,
+            name: req.user.email.split('@')[0],
+            role: req.user.role || 'user',
+            is_active: true
+          }, { transaction });
+          soldBy = newUser.id;
+        }
+      }
+
       // Crear la venta
       const sale = await Sale.create({
         sale_number: saleNumber,
@@ -154,7 +180,7 @@ const saleController = {
         total_amount: totalAmount,
         payment_method,
         notes,
-        sold_by: req.user.uid
+        sold_by: soldBy
       }, { transaction });
 
       // Crear items de venta y actualizar stock

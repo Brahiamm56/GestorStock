@@ -34,7 +34,20 @@
 
     <!-- Loading Overlay -->
     <div v-if="uiStore.loading" class="loading-overlay">
-      <el-loading-spinner />
+      <div class="loading-spinner">
+        <svg class="spinner" width="40" height="40" viewBox="0 0 50 50">
+          <circle
+            class="path"
+            cx="25"
+            cy="25"
+            r="20"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-miterlimit="10"
+          />
+        </svg>
+      </div>
       <p v-if="uiStore.loadingMessage">{{ uiStore.loadingMessage }}</p>
     </div>
   </div>
@@ -137,6 +150,45 @@ export default {
   justify-content: center;
   align-items: center;
   z-index: 9999;
+}
+
+.loading-spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.spinner {
+  animation: rotate 2s linear infinite;
+  color: #409eff;
+}
+
+.path {
+  stroke-dasharray: 90, 150;
+  stroke-dashoffset: 0;
+  stroke-linecap: round;
+  animation: dash 1.5s ease-in-out infinite;
+}
+
+@keyframes rotate {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes dash {
+  0% {
+    stroke-dasharray: 1, 150;
+    stroke-dashoffset: 0;
+  }
+  50% {
+    stroke-dasharray: 90, 150;
+    stroke-dashoffset: -35;
+  }
+  100% {
+    stroke-dasharray: 90, 150;
+    stroke-dashoffset: -124;
+  }
 }
 
 .loading-overlay p {

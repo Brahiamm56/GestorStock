@@ -1,9 +1,9 @@
 <template>
-  <div class="products-admin-page">
+  <div class="products-admin-page" :class="{ 'sidebar-open': sidebarOpen }">
     <!-- Header Principal -->
     <div class="page-header">
       <h1 class="page-title">Administrar Productos</h1>
-      <button class="add-product-btn" @click="$router.push('/products/new')">
+      <button class="add-product-btn" @click="openSidebar">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
@@ -224,13 +224,210 @@
         </div>
       </div>
     </div>
+
+    <!-- Sidebar Panel for New Product -->
+    <div v-if="sidebarOpen" class="sidebar-overlay" @click="closeSidebar">
+      <div class="sidebar-panel" @click.stop>
+        <!-- Sidebar Header -->
+        <div class="sidebar-header">
+          <div>
+            <h2 class="sidebar-title">{{ editMode ? 'Editar Producto' : 'Nuevo Producto' }}</h2>
+            <p v-if="editMode && originalProductData" class="sidebar-subtitle">{{ originalProductData.name }}</p>
+          </div>
+          <button type="button" class="close-btn" @click="closeSidebar">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Sidebar Content -->
+        <div class="sidebar-content">
+          <!-- Loading State -->
+          <div v-if="loadingProductData" class="loading-container">
+            <div class="loading-spinner">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2V6M12 18V22M4.93 4.93L7.76 7.76M16.24 16.24L19.07 19.07M2 12H6M18 12H22M4.93 19.07L7.76 16.24M16.24 7.76L19.07 4.93" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <p class="loading-text">Cargando datos del producto...</p>
+          </div>
+          
+          <!-- Form -->
+          <form v-else class="product-form" @submit.prevent="handleSubmit">
+            <!-- Product Name -->
+            <div class="form-group">
+              <label class="form-label">Nombre del Producto *</label>
+              <input 
+                v-model="productForm.name" 
+                type="text" 
+                class="form-input"
+                :class="{ 'error': formErrors.name }"
+                placeholder="Ingrese el nombre del producto"
+                required
+                ref="firstInput"
+                @blur="validateField('name', productForm.name)"
+              />
+              <span v-if="formErrors.name" class="error-message">{{ formErrors.name }}</span>
+            </div>
+
+            <!-- SKU -->
+            <div class="form-group">
+              <label class="form-label">SKU/Código *</label>
+              <div class="input-with-validation">
+                <input 
+                  v-model="productForm.sku" 
+                  type="text" 
+                  class="form-input"
+                  :class="{ 'error': formErrors.sku || skuExists, 'checking': skuChecking }"
+                  placeholder="Código único del producto"
+                  required
+                  @input="handleSkuChange($event.target.value)"
+                  @blur="validateField('sku', productForm.sku)"
+                />
+                <div v-if="skuChecking" class="validation-spinner">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2V6M12 18V22M4.93 4.93L7.76 7.76M16.24 16.24L19.07 19.07M2 12H6M18 12H22M4.93 19.07L7.76 16.24M16.24 7.76L19.07 4.93" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </div>
+              </div>
+              <span v-if="formErrors.sku" class="error-message">{{ formErrors.sku }}</span>
+              <span v-else-if="skuExists" class="error-message">Este SKU ya existe</span>
+            </div>
+
+            <!-- Description -->
+            <div class="form-group">
+              <label class="form-label">Descripción</label>
+              <textarea 
+                v-model="productForm.description" 
+                class="form-textarea"
+                placeholder="Descripción detallada del producto"
+                rows="3"
+              ></textarea>
+            </div>
+
+            <!-- Price and Stock Row -->
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Precio *</label>
+                <input 
+                  v-model.number="productForm.price" 
+                  type="number" 
+                  step="0.01" 
+                  min="0" 
+                  class="form-input"
+                  :class="{ 'error': formErrors.price }"
+                  placeholder="0.00"
+                  required
+                  @blur="validateField('price', productForm.price)"
+                />
+                <span v-if="formErrors.price" class="error-message">{{ formErrors.price }}</span>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Stock Inicial *</label>
+                <input 
+                  v-model.number="productForm.stock_quantity" 
+                  type="number" 
+                  min="0" 
+                  class="form-input"
+                  :class="{ 'error': formErrors.stock_quantity }"
+                  placeholder="0"
+                  required
+                  @blur="validateField('stock_quantity', productForm.stock_quantity)"
+                />
+                <span v-if="formErrors.stock_quantity" class="error-message">{{ formErrors.stock_quantity }}</span>
+              </div>
+            </div>
+
+            <!-- Min Stock and Category Row -->
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Stock Mínimo</label>
+                <input 
+                  v-model.number="productForm.min_stock" 
+                  type="number" 
+                  min="0" 
+                  class="form-input"
+                  placeholder="10"
+                />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Categoría *</label>
+                <select 
+                  v-model="productForm.category" 
+                  class="form-select" 
+                  :class="{ 'error': formErrors.category }"
+                  required
+                  @change="validateField('category', productForm.category)"
+                >
+                  <option value="">Seleccionar categoría</option>
+                  <option value="ENVASES">ENVASES</option>
+                  <option value="DECORACIÓN">DECORACIÓN</option>
+                  <option value="SAHUMERIOS">SAHUMERIOS</option>
+                </select>
+                <span v-if="formErrors.category" class="error-message">{{ formErrors.category }}</span>
+              </div>
+            </div>
+
+            <!-- Brand -->
+            <div class="form-group">
+              <label class="form-label">Marca</label>
+              <input 
+                v-model="productForm.brand" 
+                type="text" 
+                class="form-input"
+                placeholder="Marca del producto"
+              />
+            </div>
+
+            <!-- Image Upload -->
+            <div class="form-group">
+              <label class="form-label">Imagen del Producto</label>
+              <div class="image-upload-area" @click="triggerFileInput" @drop="handleDrop" @dragover.prevent @dragenter.prevent>
+                <input 
+                  ref="fileInput" 
+                  type="file" 
+                  accept="image/*" 
+                  @change="handleFileSelect" 
+                  style="display: none;"
+                />
+                <div v-if="!productForm.image_url" class="upload-placeholder">
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M14.828 14.828A4 4 0 0 1 12 16A4 4 0 0 1 12 8A4 4 0 0 1 14.828 9.172" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M9 21H5A2 2 0 0 1 3 19V5A2 2 0 0 1 5 3H19A2 2 0 0 1 21 5V19A2 2 0 0 1 19 21H15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  <p>Arrastra una imagen aquí o haz clic para seleccionar</p>
+                </div>
+                <div v-else class="image-preview">
+                  <img :src="getImageUrl(productForm.image_url)" alt="Preview" />
+                  <button type="button" class="remove-image-btn" @click.stop="removeImage">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <!-- Sidebar Footer -->
+        <div class="sidebar-footer">
+          <button type="button" class="cancel-btn" @click="closeSidebar">Cancelar</button>
+          <button type="button" class="create-btn" @click="handleSubmit" :disabled="!isFormValid || submitting">
+            <span v-if="submitting">{{ editMode ? 'Actualizando...' : 'Creando...' }}</span>
+            <span v-else>{{ editMode ? 'Actualizar Producto' : 'Crear Producto' }}</span>
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch, reactive, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
-import { productService } from '@/services/api'
+import { productService, uploadService } from '@/services/api'
 import { toast } from 'vue3-toastify'
 import { ElMessageBox } from 'element-plus'
 import { getImageUrl } from '@/config/api'
@@ -241,6 +438,41 @@ export default {
     const router = useRouter()
     const products = ref([])
     const loading = ref(false)
+    
+    // Sidebar state
+    const sidebarOpen = ref(false)
+    const submitting = ref(false)
+    const firstInput = ref(null)
+    const fileInput = ref(null)
+    const editMode = ref(false)
+    const editingProductId = ref(null)
+    const originalProductData = ref(null)
+    const loadingProductData = ref(false)
+    
+    // Product form
+    const productForm = reactive({
+      name: '',
+      sku: '',
+      description: '',
+      price: 0,
+      stock_quantity: 0,
+      min_stock: 10,
+      category: '',
+      brand: '',
+      image_url: ''
+    })
+    
+    // Form validation states
+    const formErrors = reactive({
+      name: '',
+      sku: '',
+      price: '',
+      stock_quantity: '',
+      category: ''
+    })
+    
+    const skuChecking = ref(false)
+    const skuExists = ref(false)
     
     // Filtros
     const searchQuery = ref('')
@@ -320,6 +552,23 @@ export default {
       return searchQuery.value || selectedCategory.value || sortBy.value || showLowStock.value
     })
 
+    const isFormValid = computed(() => {
+      const baseValidation = productForm.name.trim() && 
+                            productForm.sku.trim() && 
+                            productForm.price > 0 && 
+                            productForm.stock_quantity >= 0 && 
+                            productForm.category &&
+                            !skuExists.value &&
+                            !Object.values(formErrors).some(error => error)
+      
+      // In edit mode, also require changes to be made
+      if (editMode.value) {
+        return baseValidation && hasUnsavedChanges.value
+      }
+      
+      return baseValidation
+    })
+
     // Métodos
     const loadProducts = async () => {
       loading.value = true
@@ -382,7 +631,31 @@ export default {
     }
 
     const editProduct = (product) => {
-      router.push(`/products/${product.id}/edit`)
+      console.log('=== DEBUGGING EDIT ===')
+      console.log('Product object:', product)
+      console.log('Product ID:', product.id)
+      console.log('Type of product:', typeof product)
+      console.log('Keys of product:', Object.keys(product))
+      console.log('========================')
+      
+      // Verify product is an object and has ID
+      if (typeof product !== 'object' || !product) {
+        console.error('Product is not an object:', product)
+        toast.error('Error: Datos del producto inválidos')
+        return
+      }
+      
+      // Get the product ID
+      const productId = product.id || product._id
+      
+      if (!productId) {
+        console.error('No ID found in product object')
+        toast.error('Error: No se puede editar - ID no encontrado')
+        return
+      }
+      
+      // Open sidebar in edit mode
+      openSidebar('edit', productId)
     }
 
     const deleteProduct = async (product) => {
@@ -431,6 +704,338 @@ export default {
       event.target.style.display = 'none'
     }
 
+    // Sidebar methods
+    const openSidebar = (mode = 'create', productId = null) => {
+      editMode.value = mode === 'edit'
+      editingProductId.value = productId
+      
+      if (editMode.value && productId) {
+        loadProductForEdit(productId)
+      } else {
+        resetForm()
+      }
+      
+      sidebarOpen.value = true
+      nextTick(() => {
+        firstInput.value?.focus()
+      })
+    }
+
+    const closeSidebar = () => {
+      if (hasUnsavedChanges.value) {
+        ElMessageBox.confirm(
+          '¿Está seguro de cerrar? Los cambios no guardados se perderán.',
+          'Confirmar cierre',
+          {
+            confirmButtonText: 'Cerrar sin guardar',
+            cancelButtonText: 'Continuar editando',
+            type: 'warning',
+          }
+        ).then(() => {
+          performCloseSidebar()
+        }).catch(() => {
+          // User cancelled, do nothing
+        })
+      } else {
+        performCloseSidebar()
+      }
+    }
+    
+    const performCloseSidebar = () => {
+      sidebarOpen.value = false
+      editMode.value = false
+      editingProductId.value = null
+      originalProductData.value = null
+      resetForm()
+    }
+
+    const resetForm = () => {
+      Object.assign(productForm, {
+        name: '',
+        sku: '',
+        description: '',
+        price: 0,
+        stock_quantity: 0,
+        min_stock: 10,
+        category: '',
+        brand: '',
+        image_url: ''
+      })
+      
+      // Reset validation states
+      Object.assign(formErrors, {
+        name: '',
+        sku: '',
+        price: '',
+        stock_quantity: '',
+        category: ''
+      })
+      
+      skuExists.value = false
+      skuChecking.value = false
+      originalProductData.value = null
+    }
+
+    const triggerFileInput = () => {
+      fileInput.value?.click()
+    }
+
+    const handleFileSelect = (event) => {
+      const file = event.target.files[0]
+      if (file) {
+        uploadImage(file)
+      }
+    }
+
+    const handleDrop = (event) => {
+      event.preventDefault()
+      const file = event.dataTransfer.files[0]
+      if (file && file.type.startsWith('image/')) {
+        uploadImage(file)
+      }
+    }
+
+    const getImageUrl = (imageUrl) => {
+      if (!imageUrl) return null
+      return imageUrl.startsWith('http') ? imageUrl : `/uploads/${imageUrl}`
+    }
+
+    const uploadImage = async (file) => {
+      try {
+        submitting.value = true
+        const response = await uploadService.uploadImage(file)
+        
+        if (response.data.success) {
+          productForm.image_url = response.data.data.url
+          toast.success('Imagen subida correctamente')
+        }
+      } catch (error) {
+        console.error('Error al subir imagen:', error)
+        toast.error('Error al subir la imagen')
+      } finally {
+        submitting.value = false
+      }
+    }
+
+    const removeImage = () => {
+      productForm.image_url = ''
+    }
+
+    const handleSubmit = async () => {
+      if (!isFormValid.value) {
+        if (editMode.value && !hasUnsavedChanges.value) {
+          toast.error('No se han realizado cambios')
+        } else {
+          toast.error('Por favor completa todos los campos requeridos')
+        }
+        return
+      }
+
+      try {
+        submitting.value = true
+        
+        // Prepare data with proper structure
+        const productData = {
+          name: productForm.name.trim(),
+          sku: productForm.sku.trim().toUpperCase(),
+          description: productForm.description?.trim() || '',
+          price: parseFloat(productForm.price),
+          stock_quantity: parseInt(productForm.stock_quantity),
+          min_stock: parseInt(productForm.min_stock) || 0,
+          category: productForm.category,
+          brand: productForm.brand?.trim() || '',
+          image_url: productForm.image_url || ''
+        }
+        
+        console.log(`${editMode.value ? 'Actualizando' : 'Creando'} producto:`, productData)
+        
+        let response
+        if (editMode.value) {
+          // Update existing product
+          response = await productService.update(editingProductId.value, productData)
+          
+          // Update product in the list
+          const index = products.value.findIndex(p => p.id === editingProductId.value)
+          if (index !== -1) {
+            products.value[index] = response.data.product
+          }
+          
+          toast.success('Producto actualizado correctamente')
+        } else {
+          // Create new product
+          response = await productService.create(productData)
+          
+          // Add new product to the list
+          products.value.unshift(response.data.product)
+          toast.success('Producto creado correctamente')
+        }
+        
+        performCloseSidebar()
+        
+      } catch (error) {
+        console.error(`Error al ${editMode.value ? 'actualizar' : 'crear'} producto:`, error)
+        
+        // Handle specific error types
+        if (error.response?.status === 409) {
+          // SKU conflict
+          toast.error('El SKU ya existe. Por favor, utiliza un código único.')
+          // Focus on SKU field
+          const skuInput = document.querySelector('input[placeholder="Código único del producto"]')
+          if (skuInput) {
+            skuInput.focus()
+            skuInput.select()
+          }
+        } else if (error.response?.status === 400) {
+          // Validation errors
+          const errorMessage = error.response.data?.error || 'Datos inválidos'
+          toast.error(errorMessage)
+        } else if (error.response?.status === 401) {
+          // Authentication error
+          toast.error('Sesión expirada. Por favor, inicia sesión nuevamente.')
+        } else if (error.response?.status === 500) {
+          // Server error
+          toast.error('Error del servidor. Por favor, inténtalo más tarde.')
+        } else {
+          // Generic error
+          const action = editMode.value ? 'actualizar' : 'crear'
+          toast.error(`Error al ${action} el producto. Verifica los datos e inténtalo nuevamente.`)
+        }
+      } finally {
+        submitting.value = false
+      }
+    }
+
+    // Load product data for editing
+    const loadProductForEdit = async (productId) => {
+      try {
+        loadingProductData.value = true
+        const response = await productService.getById(productId)
+        const product = response.data.product
+        
+        // Store original data for comparison
+        originalProductData.value = { ...product }
+        
+        // Populate form with product data
+        Object.assign(productForm, {
+          name: product.name || '',
+          sku: product.sku || '',
+          description: product.description || '',
+          price: product.price || 0,
+          stock_quantity: product.stock_quantity || 0,
+          min_stock: product.min_stock || 10,
+          category: product.category || '',
+          brand: product.brand || '',
+          image_url: product.image_url || ''
+        })
+        
+        // Reset validation states
+        Object.assign(formErrors, {
+          name: '',
+          sku: '',
+          price: '',
+          stock_quantity: '',
+          category: ''
+        })
+        
+        skuExists.value = false
+        
+      } catch (error) {
+        console.error('Error loading product:', error)
+        toast.error('Error al cargar los datos del producto')
+        performCloseSidebar()
+      } finally {
+        loadingProductData.value = false
+      }
+    }
+    
+    // Check for unsaved changes
+    const hasUnsavedChanges = computed(() => {
+      if (!editMode.value || !originalProductData.value) return false
+      
+      return (
+        productForm.name !== (originalProductData.value.name || '') ||
+        productForm.sku !== (originalProductData.value.sku || '') ||
+        productForm.description !== (originalProductData.value.description || '') ||
+        productForm.price !== (originalProductData.value.price || 0) ||
+        productForm.stock_quantity !== (originalProductData.value.stock_quantity || 0) ||
+        productForm.min_stock !== (originalProductData.value.min_stock || 10) ||
+        productForm.category !== (originalProductData.value.category || '') ||
+        productForm.brand !== (originalProductData.value.brand || '') ||
+        productForm.image_url !== (originalProductData.value.image_url || '')
+      )
+    })
+    
+    // Real-time SKU validation
+    const checkSkuUniqueness = async (sku) => {
+      if (!sku || sku.length < 2) {
+        skuExists.value = false
+        formErrors.sku = ''
+        return
+      }
+      
+      try {
+        skuChecking.value = true
+        // Check if SKU exists in current products list (excluding current product in edit mode)
+        const existsLocally = products.value.some(p => 
+          p.sku.toUpperCase() === sku.toUpperCase() && 
+          (!editMode.value || p.id !== editingProductId.value)
+        )
+        
+        if (existsLocally) {
+          skuExists.value = true
+          formErrors.sku = 'Este SKU ya existe'
+        } else {
+          skuExists.value = false
+          formErrors.sku = ''
+        }
+      } catch (error) {
+        console.error('Error checking SKU:', error)
+      } finally {
+        skuChecking.value = false
+      }
+    }
+    
+    // Debounced SKU check
+    let skuTimeout = null
+    const handleSkuChange = (value) => {
+      clearTimeout(skuTimeout)
+      skuTimeout = setTimeout(() => {
+        checkSkuUniqueness(value)
+      }, 500)
+    }
+    
+    // Form validation functions
+    const validateField = (field, value) => {
+      switch (field) {
+        case 'name':
+          formErrors.name = !value?.trim() ? 'El nombre es requerido' : ''
+          break
+        case 'sku':
+          if (!value?.trim()) {
+            formErrors.sku = 'El SKU es requerido'
+          } else if (value.length < 2) {
+            formErrors.sku = 'El SKU debe tener al menos 2 caracteres'
+          }
+          break
+        case 'price':
+          formErrors.price = (!value || value <= 0) ? 'El precio debe ser mayor a 0' : ''
+          break
+        case 'stock_quantity':
+          formErrors.stock_quantity = (value < 0) ? 'El stock no puede ser negativo' : ''
+          break
+        case 'category':
+          formErrors.category = !value ? 'La categoría es requerida' : ''
+          break
+      }
+    }
+    
+    // Keyboard event handler
+    const handleKeydown = (event) => {
+      if (event.key === 'Escape' && sidebarOpen.value) {
+        closeSidebar()
+      }
+    }
+
     // Watchers
     watch([searchQuery, selectedCategory, showLowStock], () => {
       currentPage.value = 1
@@ -438,6 +1043,20 @@ export default {
 
     onMounted(() => {
       loadProducts()
+      document.addEventListener('keydown', handleKeydown)
+    })
+
+    // Cleanup
+    const cleanup = () => {
+      document.removeEventListener('keydown', handleKeydown)
+      document.body.style.overflow = ''
+    }
+
+    // Watch for component unmount
+    watch(() => sidebarOpen.value, (newVal) => {
+      if (!newVal) {
+        document.body.style.overflow = ''
+      }
     })
 
     return {
@@ -470,7 +1089,31 @@ export default {
       formatPrice,
       isLowStock,
       getImageUrl,
-      handleImageError
+      handleImageError,
+      // Sidebar
+      sidebarOpen,
+      submitting,
+      firstInput,
+      fileInput,
+      productForm,
+      formErrors,
+      skuChecking,
+      skuExists,
+      editMode,
+      editingProductId,
+      loadingProductData,
+      hasUnsavedChanges,
+      isFormValid,
+      openSidebar,
+      closeSidebar,
+      resetForm,
+      triggerFileInput,
+      handleFileSelect,
+      handleDrop,
+      removeImage,
+      handleSubmit,
+      handleSkuChange,
+      validateField
     }
   }
 }
@@ -967,5 +1610,438 @@ export default {
   .product-info {
     min-width: 200px;
   }
+}
+
+/* Sidebar Styles */
+.sidebar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 1000;
+  display: flex;
+  justify-content: flex-end;
+  animation: fadeIn 0.3s ease;
+}
+
+.sidebar-panel {
+  position: fixed;
+  right: 0;
+  top: 0;
+  width: 450px;
+  height: 100vh;
+  background: #FFFFFF;
+  box-shadow: -10px 0 25px -5px rgba(0, 0, 0, 0.1), -5px 0 10px -5px rgba(0, 0, 0, 0.05);
+  transform: translateX(0);
+  transition: transform 0.3s ease-out;
+  z-index: 1001;
+  display: flex;
+  flex-direction: column;
+  animation: slideInFromRight 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideInFromRight {
+  from { 
+    transform: translateX(100%);
+  }
+  to { 
+    transform: translateX(0);
+  }
+}
+
+/* Sidebar Header */
+.sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px;
+  border-bottom: 1px solid #e5e7eb;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+}
+
+.sidebar-title {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 1.25rem;
+  color: #1F2937;
+}
+
+.sidebar-close-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.sidebar-close-btn:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+/* Sidebar Content */
+.sidebar-content {
+  flex: 1;
+  padding: 24px;
+  overflow-y: auto;
+}
+
+.product-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.form-label {
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: #1F2937;
+  margin-bottom: 4px;
+}
+
+.form-input,
+.form-select,
+.form-textarea {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  color: #1F2937;
+  background: white;
+  transition: all 0.3s ease;
+}
+
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.form-input::placeholder,
+.form-textarea::placeholder {
+  color: #6b7280;
+  font-weight: 400;
+}
+
+.form-select {
+  cursor: pointer;
+}
+
+.form-textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+/* Image Upload Area */
+.image-upload-area {
+  border: 2px dashed #e5e7eb;
+  border-radius: 8px;
+  padding: 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: #fafbfc;
+}
+
+.image-upload-area:hover {
+  border-color: #2563eb;
+  background: rgba(37, 99, 235, 0.05);
+}
+
+.upload-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  color: #6b7280;
+}
+
+.upload-placeholder svg {
+  color: #9ca3af;
+}
+
+.upload-placeholder p {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.image-preview {
+  position: relative;
+  display: inline-block;
+}
+
+.image-preview img {
+  max-width: 100%;
+  max-height: 120px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.remove-image-btn {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 50%;
+  background: #ef4444;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.remove-image-btn:hover {
+  background: #dc2626;
+  transform: scale(1.1);
+}
+
+/* Sidebar Footer */
+.sidebar-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 24px;
+  border-top: 1px solid #e5e7eb;
+  background: #fafbfc;
+}
+
+.cancel-btn {
+  flex: 1;
+  padding: 12px 24px;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  background: #6B7280;
+  color: white;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.cancel-btn:hover {
+  background: #4b5563;
+  border-color: #4b5563;
+}
+
+.create-btn {
+  flex: 1;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  background: #2563eb;
+  color: white;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.create-btn:hover:not(:disabled) {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.create-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Layout Adjustment for Main Content */
+.products-admin-page.sidebar-open {
+  margin-right: 450px;
+  transition: margin-right 0.3s ease-out;
+}
+
+/* Responsive Sidebar Styles */
+@media (max-width: 1024px) {
+  .sidebar-panel {
+    width: 400px;
+  }
+  
+  .products-admin-page.sidebar-open {
+    margin-right: 400px;
+  }
+}
+
+@media (max-width: 768px) {
+  .sidebar-panel {
+    width: 100%;
+    max-width: 100vw;
+  }
+  
+  .products-admin-page.sidebar-open {
+    margin-right: 0;
+  }
+  
+  .sidebar-header,
+  .sidebar-content,
+  .sidebar-footer {
+    padding: 16px;
+  }
+  
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  .sidebar-footer {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .cancel-btn,
+  .create-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .sidebar-header {
+    padding: 12px;
+  }
+  
+  .sidebar-content {
+    padding: 12px;
+  }
+  
+  .sidebar-footer {
+    padding: 12px;
+  }
+  
+  .form-group {
+    gap: 6px;
+  }
+  
+  .product-form {
+    gap: 16px;
+  }
+}
+
+/* Form Validation Styles */
+.form-input.error,
+.form-select.error,
+.form-textarea.error {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.form-input.checking {
+  border-color: #f59e0b;
+}
+
+.error-message {
+  color: #ef4444;
+  font-size: 0.75rem;
+  font-weight: 500;
+  margin-top: 4px;
+  display: block;
+}
+
+.input-with-validation {
+  position: relative;
+}
+
+.validation-spinner {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #f59e0b;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: translateY(-50%) rotate(0deg); }
+  to { transform: translateY(-50%) rotate(360deg); }
+}
+
+.form-input:focus.error {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.form-select:focus.error {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+/* Loading Container Styles */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 2rem;
+  text-align: center;
+}
+
+.loading-container .loading-spinner {
+  color: #3b82f6;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+.loading-text {
+  color: #6b7280;
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+/* Sidebar Header Updates */
+.sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+  background: white;
+}
+
+.sidebar-subtitle {
+  color: #6b7280;
+  font-size: 0.875rem;
+  margin: 0.25rem 0 0 0;
+  font-weight: normal;
 }
 </style>
