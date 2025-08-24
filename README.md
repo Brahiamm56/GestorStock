@@ -6,7 +6,7 @@ Sistema completo de gestión de inventario desarrollado con Vue.js, Node.js y My
 
 - **Frontend**: Vue.js 3 con Vue Router y Pinia
 - **Backend**: Node.js con Express
-- **Base de datos**: PostgreSQL con Sequelize ORM
+- **Base de datos**: MySQL Browser 
 - **Autenticación**: Firebase Auth
 - **Hosting**: Preparado para Azure/Hostinger
 
