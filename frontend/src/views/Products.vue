@@ -136,12 +136,28 @@
                     :src="getImageUrl(product.image_url)" 
                     :alt="product.name"
                     @error="handleImageError"
+                    @load="handleImageLoad"
+                    loading="lazy"
                   />
                   <div v-else class="no-image">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path d="M14.828 14.828A4 4 0 0 1 12 16A4 4 0 0 1 12 8A4 4 0 0 1 14.828 9.172" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                       <path d="M9 21H5A2 2 0 0 1 3 19V5A2 2 0 0 1 5 3H19A2 2 0 0 1 21 5V19A2 2 0 0 1 19 21H15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                       <path d="M9 21V15H15V21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </div>
+                  <!-- Placeholder que se muestra cuando la imagen falla -->
+                  <div class="no-image placeholder-fallback" style="display: none;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M14.828 14.828A4 4 0 0 1 12 16A4 4 0 0 1 12 8A4 4 0 0 1 14.828 9.172" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M9 21H5A2 2 0 0 1 3 19V5A2 2 0 0 1 5 3H19A2 2 0 0 1 21 5V19A2 2 0 0 1 19 21H15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M9 21V15H15V21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </div>
+                  <!-- Indicador de carga -->
+                  <div class="image-loading" style="display: none;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M12 2V6M12 18V22M4.93 4.93L7.76 7.76M16.24 16.24L19.07 19.07M2 12H6M18 12H22M4.93 19.07L7.76 16.24M16.24 7.76L19.07 4.93" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
                   </div>
                 </div>
@@ -701,7 +717,26 @@ export default {
     }
 
     const handleImageError = (event) => {
+      console.log('❌ Error loading image:', event.target.src)
+      // Ocultar la imagen que falló
       event.target.style.display = 'none'
+      
+      // Mostrar el placeholder de fallback
+      const parent = event.target.parentElement
+      const fallbackPlaceholder = parent.querySelector('.placeholder-fallback')
+      if (fallbackPlaceholder) {
+        fallbackPlaceholder.style.display = 'flex'
+      }
+    }
+
+    const handleImageLoad = (event) => {
+      console.log('✅ Image loaded successfully:', event.target.src)
+      // Ocultar todos los placeholders cuando la imagen carga correctamente
+      const parent = event.target.parentElement
+      const placeholders = parent.querySelectorAll('.no-image')
+      placeholders.forEach(placeholder => {
+        placeholder.style.display = 'none'
+      })
     }
 
     // Sidebar methods
@@ -797,7 +832,24 @@ export default {
 
     const getImageUrl = (imageUrl) => {
       if (!imageUrl) return null
-      return imageUrl.startsWith('http') ? imageUrl : `/uploads/${imageUrl}`
+      
+      let finalUrl
+      
+      // Si es una URL completa, usarla directamente
+      if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+        finalUrl = imageUrl
+      }
+      // Si ya tiene /uploads/, usar el proxy de Vite
+      else if (imageUrl.startsWith('/uploads/')) {
+        finalUrl = imageUrl // El proxy de Vite maneja esto
+      }
+      // Si es solo el nombre del archivo, construir la URL con /uploads/
+      else {
+        finalUrl = `/uploads/${imageUrl}`
+      }
+      
+      console.log('🖼️ Image URL:', { original: imageUrl, final: finalUrl })
+      return finalUrl
     }
 
     const uploadImage = async (file) => {
@@ -1090,6 +1142,7 @@ export default {
       isLowStock,
       getImageUrl,
       handleImageError,
+      handleImageLoad,
       // Sidebar
       sidebarOpen,
       submitting,
@@ -1399,6 +1452,7 @@ export default {
   border-radius: 8px;
   overflow: hidden;
   flex-shrink: 0;
+  position: relative;
 }
 
 .product-image img {
@@ -1415,6 +1469,41 @@ export default {
   align-items: center;
   justify-content: center;
   color: #9ca3af;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.placeholder-fallback {
+  background: #fee2e2;
+  color: #dc2626;
+  border: 1px dashed #fca5a5;
+}
+
+.image-loading {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+}
+
+.image-loading svg {
+  animation: spin 1s linear infinite;
+  color: #6b7280;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .product-details {

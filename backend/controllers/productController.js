@@ -1,5 +1,6 @@
 const { Product, User } = require('../models');
-const { Op } = require('sequelize');
+const { Op, sequelize } = require('sequelize');
+const { sequelize: db } = require('../config/database');
 
 const productController = {
   // Obtener todos los productos
@@ -284,7 +285,7 @@ const productController = {
         where: {
           is_active: true,
           stock_quantity: {
-            [Op.lte]: sequelize.col('min_stock')
+            [Op.lte]: db.col('min_stock')
           }
         },
         include: [
