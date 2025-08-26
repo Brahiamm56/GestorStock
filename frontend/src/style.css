@@ -1,16 +1,22 @@
 /* Estilos globales */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap');
+
 :root {
-  --primary-color: #409eff;
+  --primary-color: #7c5a43;
+  --secondary-color: #f8cdd2;
+  --accent-color: #fbeee6;
   --success-color: #67c23a;
   --warning-color: #e6a23c;
   --danger-color: #f56c6c;
   --info-color: #909399;
-  --text-color: #303133;
+  --text-color: #222;
   --text-color-regular: #606266;
+  --text-color-light: #fff;
   --text-color-secondary: #909399;
-  --border-color: #dcdfe6;
+  --border-color: #e5e5e5;
   --border-color-light: #e4e7ed;
-  --background-color: #f5f7fa;
+  --background-color: #fbeee6;
+  --card-background: #fff;
 }
 
 * {
@@ -21,10 +27,11 @@
 
 html, body {
   height: 100%;
-  font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', '微软雅黑', Arial, sans-serif;
+  font-family: 'Montserrat', 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', '微软雅黑', Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-color: var(--background-color);
+  color: var(--text-color);
 }
 
 #app {
@@ -101,4 +108,13 @@ html, body {
 
 .slide-leave-to {
   transform: translateX(100%);
+}
+
+/* Tarjetas modernas */
+.card {
+  background: var(--card-background);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(44, 39, 56, 0.04);
+  border: 1px solid var(--border-color);
+  padding: 1.5rem;
 }

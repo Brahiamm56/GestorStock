@@ -233,7 +233,7 @@ export default {
 
 .stat-icon {
   font-size: 2rem;
-  color: #409eff;
+  color: #7c5a43;
 }
 
 .stat-info h3 {
