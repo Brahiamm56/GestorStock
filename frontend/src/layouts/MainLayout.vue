@@ -56,6 +56,7 @@ const authStore = useAuthStore()
 }
 
 .el-header {
+    height: 12vh;
   background-color: #fff;
   border-bottom: 1px solid #e4e7ed;
   padding: 0 20px;
@@ -75,11 +76,25 @@ const authStore = useAuthStore()
 }
 
 .el-aside {
+    width: 30vh;
   background-color: #fff;
   border-right: 1px solid #e4e7ed;
 }
 
 .sidebar-menu {
   border-right: none;
+}
+
+.sidebar-menu .el-menu-item {
+  height: 90px !important;
+  line-height: 56px !important;
+  font-size: 1.1rem;
+  padding-left: 24px !important;
+  padding-right: 16px !important;
+}
+
+.sidebar-menu .el-menu-item .el-icon {
+  font-size: 1.5rem;
+  margin-right: 12px;
 }
 </style>
