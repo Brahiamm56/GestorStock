@@ -91,6 +91,7 @@ const authStore = useAuthStore()
   font-size: 1.1rem;
   padding-left: 24px !important;
   padding-right: 16px !important;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .sidebar-menu .el-menu-item .el-icon {
