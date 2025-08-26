@@ -1,51 +1,6 @@
 <template>
   <div class="dashboard">
-    <el-container>
-      <el-header>
-        <div class="header-content">
-          <h1>Dashboard</h1>
-          <div class="user-info">
-            <span>Bienvenido, {{ authStore.user?.name }}</span>
-            <el-button @click="authStore.logout" type="text">Cerrar Sesión</el-button>
-          </div>
-        </div>
-      </el-header>
-      
-      <el-container>
-        <el-aside width="250px">
-          <el-menu
-            :default-active="$route.path"
-            router
-            class="sidebar-menu"
-          >
-            <el-menu-item index="/dashboard">
-              <el-icon><DataBoard /></el-icon>
-              <span>Dashboard</span>
-            </el-menu-item>
-            
-            <el-menu-item index="/products">
-              <el-icon><Goods /></el-icon>
-              <span>Productos</span>
-            </el-menu-item>
-            
-            <el-menu-item index="/sales">
-              <el-icon><ShoppingCart /></el-icon>
-              <span>Ventas</span>
-            </el-menu-item>
-            
-            <el-menu-item v-if="authStore.isAdmin" index="/users">
-              <el-icon><User /></el-icon>
-              <span>Usuarios</span>
-            </el-menu-item>
-            
-            <el-menu-item index="/profile">
-              <el-icon><Setting /></el-icon>
-              <span>Perfil</span>
-            </el-menu-item>
-          </el-menu>
-        </el-aside>
-        
-        <el-main>
+    <el-main>
           <div class="dashboard-content">
             <el-row :gutter="20">
               <el-col :span="6">
@@ -138,8 +93,6 @@
             </el-row>
           </div>
         </el-main>
-      </el-container>
-    </el-container>
   </div>
 </template>
 
@@ -191,34 +144,6 @@ export default {
 <style scoped>
 .dashboard {
   height: 100vh;
-}
-
-.el-header {
-  background-color: #fff;
-  border-bottom: 1px solid #e4e7ed;
-  padding: 0 20px;
-}
-
-.header-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  height: 100%;
-}
-
-.user-info {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.el-aside {
-  background-color: #fff;
-  border-right: 1px solid #e4e7ed;
-}
-
-.sidebar-menu {
-  border-right: none;
 }
 
 .dashboard-content {
