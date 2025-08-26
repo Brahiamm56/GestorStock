@@ -248,3 +248,13 @@ export default {
   font-size: 0.9rem;
 }
 </style>
+
+<style>
+  .el-card__header {
+    background-color: var(--primary-color);
+    color: var(--text-color-light);
+    font-weight: 600;
+    font-size: 1.1rem;
+    border-bottom: 1px solid var(--border-color);
+  }
+</style>
