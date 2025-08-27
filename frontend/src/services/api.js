@@ -14,6 +14,9 @@ const api = axios.create({
 // Interceptor para agregar token de autenticación
 api.interceptors.request.use(
   async (config) => {
+    console.log('🔍 API Request:', config.method?.toUpperCase(), config.url)
+    console.log('🔍 Full URL:', config.baseURL + config.url)
+    
     const auth = getAuth()
     const user = auth.currentUser
     
@@ -107,6 +110,19 @@ export const authService = {
   verifyToken: (idToken) => api.post('/auth/verify', { idToken }),
   getProfile: () => api.get('/auth/profile'),
   updateProfile: (data) => api.put('/auth/profile', data)
+}
+
+export const uploadService = {
+  uploadImage: (file) => {
+    const formData = new FormData()
+    formData.append('image', file)
+    
+    return api.post('/upload/image', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
+  }
 }
 
 export default api

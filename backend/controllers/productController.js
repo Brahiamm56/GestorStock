@@ -1,5 +1,6 @@
 const { Product, User } = require('../models');
-const { Op } = require('sequelize');
+const { Op, sequelize } = require('sequelize');
+const { sequelize: db } = require('../config/database');
 
 const productController = {
   // Obtener todos los productos
@@ -69,7 +70,10 @@ const productController = {
         return res.status(404).json({ error: 'Producto no encontrado' });
       }
 
-      res.json({ product });
+      res.json({ 
+        success: true,
+        product 
+      });
     } catch (error) {
       console.error('Error al obtener producto:', error);
       res.status(500).json({ error: 'Error interno del servidor' });
@@ -91,10 +95,32 @@ const productController = {
         image_url
       } = req.body;
 
+      // Validar categoría
+      const validCategories = ['ENVASES', 'DECORACIÓN', 'SAHUMERIOS'];
+      if (!validCategories.includes(category)) {
+        return res.status(400).json({ 
+          error: 'Categoría inválida. Las categorías válidas son: ENVASES, DECORACIÓN, SAHUMERIOS' 
+        });
+      }
+
       // Verificar si el SKU ya existe
       const existingProduct = await Product.findOne({ where: { sku } });
       if (existingProduct) {
         return res.status(409).json({ error: 'El SKU ya existe' });
+      }
+
+      // Buscar el usuario en la base de datos o crear uno temporal
+      let user = await User.findOne({ where: { firebase_uid: req.user.uid } });
+      
+      if (!user) {
+        // Crear usuario temporal si no existe
+        user = await User.create({
+          firebase_uid: req.user.uid,
+          email: req.user.email || 'temp@example.com',
+          name: req.user.email ? req.user.email.split('@')[0] : 'Usuario',
+          role: 'user',
+          is_active: true
+        });
       }
 
       const product = await Product.create({
@@ -107,10 +133,11 @@ const productController = {
         category,
         brand,
         image_url,
-        created_by: req.user.uid
+        created_by: user.id
       });
 
       res.status(201).json({
+        success: true,
         message: 'Producto creado correctamente',
         product
       });
@@ -132,6 +159,16 @@ const productController = {
         return res.status(404).json({ error: 'Producto no encontrado' });
       }
 
+      // Validar categoría si se está actualizando
+      if (updateData.category) {
+        const validCategories = ['ENVASES', 'DECORACIÓN', 'SAHUMERIOS'];
+        if (!validCategories.includes(updateData.category)) {
+          return res.status(400).json({ 
+            error: 'Categoría inválida. Las categorías válidas son: ENVASES, DECORACIÓN, SAHUMERIOS' 
+          });
+        }
+      }
+
       // Verificar si el SKU ya existe (si se está actualizando)
       if (updateData.sku && updateData.sku !== product.sku) {
         const existingProduct = await Product.findOne({ where: { sku: updateData.sku } });
@@ -143,6 +180,7 @@ const productController = {
       await product.update(updateData);
 
       res.json({
+        success: true,
         message: 'Producto actualizado correctamente',
         product
       });
@@ -152,24 +190,47 @@ const productController = {
     }
   },
 
-  // Eliminar producto (soft delete)
+  // Eliminar producto (soft delete) - CON LOGS EXTENSIVOS
   async deleteProduct(req, res) {
+    console.log(`=== INICIO ELIMINACIÓN PRODUCTO ===`);
+    console.log(`ID recibido: ${req.params.id}`);
+    console.log(`Headers:`, req.headers);
+    console.log(`User:`, req.user);
+    
     try {
       const { id } = req.params;
 
+      // Buscar el producto
       const product = await Product.findByPk(id);
+      console.log(`Producto encontrado:`, product ? `Sí - ${product.name}` : 'No existe');
       
       if (!product) {
-        return res.status(404).json({ error: 'Producto no encontrado' });
+        console.log(`❌ Producto ${id} no encontrado en BD`);
+        return res.status(404).json({ 
+          success: false,
+          error: 'Producto no encontrado' 
+        });
       }
 
+      // Soft delete - marcar como inactivo
       await product.update({ is_active: false });
+      console.log(`✅ Producto ${id} marcado como inactivo exitosamente`);
 
-      res.json({ message: 'Producto eliminado correctamente' });
+      res.json({ 
+        success: true,
+        message: 'Producto eliminado correctamente',
+        deletedId: id
+      });
     } catch (error) {
-      console.error('Error al eliminar producto:', error);
-      res.status(500).json({ error: 'Error interno del servidor' });
+      console.error(`❌ ERROR CRÍTICO al eliminar producto:`, error);
+      res.status(500).json({ 
+        success: false,
+        error: 'Error interno del servidor',
+        details: error.message 
+      });
     }
+    
+    console.log(`=== FIN ELIMINACIÓN PRODUCTO ===`);
   },
 
   // Actualizar stock de producto
@@ -224,7 +285,7 @@ const productController = {
         where: {
           is_active: true,
           stock_quantity: {
-            [Op.lte]: sequelize.col('min_stock')
+            [Op.lte]: db.col('min_stock')
           }
         },
         include: [
@@ -240,6 +301,17 @@ const productController = {
       res.json({ products });
     } catch (error) {
       console.error('Error al obtener productos con stock bajo:', error);
+      res.status(500).json({ error: 'Error interno del servidor' });
+    }
+  },
+
+  // Obtener categorías disponibles
+  async getCategories(req, res) {
+    try {
+      const categories = ['ENVASES', 'DECORACIÓN', 'SAHUMERIOS'];
+      res.json({ categories });
+    } catch (error) {
+      console.error('Error al obtener categorías:', error);
       res.status(500).json({ error: 'Error interno del servidor' });
     }
   }

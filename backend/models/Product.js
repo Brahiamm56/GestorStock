@@ -42,7 +42,11 @@ const Product = sequelize.define('Product', {
     }
   },
   category: {
-    type: DataTypes.STRING
+    type: DataTypes.STRING,
+    allowNull: false,
+    validate: {
+      isIn: [['ENVASES', 'DECORACIÓN', 'SAHUMERIOS']]
+    }
   },
   brand: {
     type: DataTypes.STRING
