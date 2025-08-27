@@ -1,152 +1,98 @@
 <template>
-  <div class="modern-dashboard">
-    <!-- Header Section -->
-    <div class="dashboard-header">
-      <div class="header-content">
-        <h1 class="dashboard-title">Dashboard Overview</h1>
-        <p class="dashboard-subtitle">Bienvenido, {{ authStore.user?.name || 'Usuario' }}</p>
-      </div>
-      <div class="header-actions">
-        <div class="time-filter">
-          <select v-model="selectedPeriod" @change="updatePeriod" class="period-select">
-            <option value="today">Hoy</option>
-            <option value="week">Esta Semana</option>
-            <option value="month">Este Mes</option>
-            <option value="year">Este Año</option>
-          </select>
-        </div>
-      </div>
-    </div>
-
-    <!-- Main Metrics Cards -->
-    <div class="metrics-grid">
-      <div 
-        v-for="(metric, index) in metrics" 
-        :key="metric.id"
-        class="metric-card"
-        :class="metric.class"
-        :style="{ animationDelay: `${index * 0.1}s` }"
-      >
-        <div class="metric-icon">
-          <i :class="metric.icon"></i>
-        </div>
-        <div class="metric-content">
-          <div class="metric-value">
-            <span class="animated-number" :data-target="metric.value">{{ animatedValues[metric.id] || 0 }}</span>
-            <span v-if="metric.suffix" class="metric-suffix">{{ metric.suffix }}</span>
+  <div class="dashboard">
+    <el-main>
+          <div class="dashboard-content">
+            <el-row :gutter="20">
+              <el-col :span="6">
+                <el-card>
+                  <div class="stat-card">
+                    <div class="stat-icon">
+                      <el-icon><Goods /></el-icon>
+                    </div>
+                    <div class="stat-info">
+                      <h3>{{ stats.totalProducts || 0 }}</h3>
+                      <p>Total Productos</p>
+                    </div>
+                  </div>
+                </el-card>
+              </el-col>
+              
+              <el-col :span="6">
+                <el-card>
+                  <div class="stat-card">
+                    <div class="stat-icon">
+                      <el-icon><ShoppingCart /></el-icon>
+                    </div>
+                    <div class="stat-info">
+                      <h3>{{ stats.totalSales || 0 }}</h3>
+                      <p>Total Ventas</p>
+                    </div>
+                  </div>
+                </el-card>
+              </el-col>
+              
+              <el-col :span="6">
+                <el-card>
+                  <div class="stat-card">
+                    <div class="stat-icon">
+                      <el-icon><Money /></el-icon>
+                    </div>
+                    <div class="stat-info">
+                      <h3>${{ stats.totalRevenue || 0 }}</h3>
+                      <p>Ingresos Totales</p>
+                    </div>
+                  </div>
+                </el-card>
+              </el-col>
+              
+              <el-col :span="6">
+                <el-card>
+                  <div class="stat-card">
+                    <div class="stat-icon">
+                      <el-icon><Warning /></el-icon>
+                    </div>
+                    <div class="stat-info">
+                      <h3>{{ stats.lowStockProducts || 0 }}</h3>
+                      <p>Stock Bajo</p>
+                    </div>
+                  </div>
+                </el-card>
+              </el-col>
+            </el-row>
+            
+            <el-row :gutter="20" style="margin-top: 20px;">
+              <el-col :span="12">
+                <el-card>
+                  <template #header>
+                    <span>Productos con Stock Bajo</span>
+                  </template>
+                  <el-table :data="lowStockProducts" style="width: 100%">
+                    <el-table-column prop="name" label="Producto" />
+                    <el-table-column prop="stock_quantity" label="Stock" width="80" />
+                    <el-table-column prop="min_stock" label="Mínimo" width="80" />
+                  </el-table>
+                </el-card>
+              </el-col>
+              
+              <el-col :span="12">
+                <el-card>
+                  <template #header>
+                    <span>Ventas Recientes</span>
+                  </template>
+                  <el-table :data="recentSales" style="width: 100%">
+                    <el-table-column prop="sale_number" label="Número" width="120" />
+                    <el-table-column prop="customer_name" label="Cliente" />
+                    <el-table-column prop="total_amount" label="Total" width="100">
+                      <template #default="scope">
+                        ${{ scope.row.total_amount }}
+                      </template>
+                    </el-table-column>
+                  </el-table>
+                </el-card>
+              </el-col>
+            </el-row>
           </div>
-          <div class="metric-label">{{ metric.label }}</div>
-          <div class="metric-trend" :class="metric.trend.type">
-            <i :class="metric.trend.icon"></i>
-            <span>{{ metric.trend.value }}%</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Charts Section -->
-    <div class="charts-section">
-      <!-- Grouped Bar Chart -->
-      <div class="chart-card grouped-bar-chart-card">
-        <div class="chart-header">
-          <h3>Comparación de Ventas</h3>
-          <div class="chart-legend">
-            <div class="legend-item">
-              <div class="legend-color" style="background-color: #6a5acd;"></div>
-              <span class="legend-label">Serie A</span>
-            </div>
-            <div class="legend-item">
-              <div class="legend-color" style="background-color: #b19cd9;"></div>
-              <span class="legend-label">Serie B</span>
-            </div>
-          </div>
-        </div>
-        <div class="chart-container">
-          <canvas ref="groupedBarChart" class="grouped-bar-chart"></canvas>
-        </div>
-      </div>
-
-      <!-- Donut Chart -->
-      <div class="chart-card donut-chart-card">
-        <div class="chart-header">
-          <h3>Distribución por Categoría</h3>
-        </div>
-        <div class="donut-container">
-          <canvas ref="donutChart" class="donut-chart"></canvas>
-          <div class="donut-legend">
-            <div v-for="item in categoryData" :key="item.label" class="legend-item">
-              <div class="legend-color" :style="{ backgroundColor: item.color }"></div>
-              <span class="legend-label">{{ item.label }}</span>
-              <span class="legend-value">{{ item.percentage }}%</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Activity & Products Section -->
-    <div class="bottom-section">
-      <!-- Activity Tracking -->
-      <div class="activity-card">
-        <div class="activity-header">
-          <h3>Actividad Reciente</h3>
-          <button class="view-all-btn">Ver Todo</button>
-        </div>
-        <div class="activity-list">
-          <div 
-            v-for="(activity, index) in recentActivities" 
-            :key="activity.id"
-            class="activity-item"
-            :style="{ animationDelay: `${index * 0.05}s` }"
-          >
-            <div class="activity-icon" :class="activity.type">
-              <span>{{ activity.number }}</span>
-            </div>
-            <div class="activity-content">
-              <div class="activity-title">{{ activity.title }}</div>
-              <div class="activity-time">{{ activity.time }}</div>
-            </div>
-            <div class="activity-status" :class="activity.status">
-              {{ activity.statusText }}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Featured Products -->
-      <div class="products-card">
-        <div class="products-header">
-          <h3>Productos Destacados</h3>
-          <button class="view-all-btn">Ver Catálogo</button>
-        </div>
-        <div class="products-grid">
-          <div 
-            v-for="(product, index) in featuredProducts" 
-            :key="product.id"
-            class="product-item"
-            :style="{ animationDelay: `${index * 0.1}s` }"
-          >
-            <div class="product-image">
-              <img :src="product.image" :alt="product.name" />
-              <div class="product-badge" v-if="product.badge">{{ product.badge }}</div>
-            </div>
-            <div class="product-info">
-              <h4 class="product-name">{{ product.name }}</h4>
-              <div class="product-rating">
-                <div class="stars">
-                  <i v-for="n in 5" :key="n" class="star" :class="{ filled: n <= product.rating }">★</i>
-                </div>
-              </div>
-              <div class="product-price">
-                <span class="current-price">${{ product.price }}</span>
-                <span v-if="product.oldPrice" class="old-price">${{ product.oldPrice }}</span>
-              </div>
-              <button class="buy-btn">Ver Más</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+        </el-main>
   </div>
 </template>
 
@@ -1138,310 +1084,8 @@ export default {
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
-@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css');
-
-/* Modern Dashboard Styles */
-.modern-dashboard {
-  min-height: 100vh;
-  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  padding: 24px;
-  animation: fadeIn 0.6s ease-out;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* Header Section */
-.dashboard-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 32px;
-  padding: 0 8px;
-}
-
-.header-content {
-  flex: 1;
-}
-
-.dashboard-title {
-  font-size: 2.5rem;
-  font-weight: 800;
-  color: #1e293b;
-  margin: 0 0 8px 0;
-  background: linear-gradient(135deg, #4f46e5, #06b6d4);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.dashboard-subtitle {
-  font-size: 1.1rem;
-  color: #64748b;
-  margin: 0;
-  font-weight: 500;
-}
-
-.header-actions {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.period-select {
-  padding: 8px 16px;
-  border: 2px solid #e2e8f0;
-  border-radius: 12px;
-  background: white;
-  font-weight: 500;
-  color: #475569;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.period-select:hover {
-  border-color: #4f46e5;
-  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
-}
-
-/* Metrics Grid */
-.metrics-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 24px;
-  margin-bottom: 32px;
-}
-
-.metric-card {
-  background: white;
-  border-radius: 20px;
-  padding: 28px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  overflow: hidden;
-  animation: slideInUp 0.6s ease-out both;
-}
-
-@keyframes slideInUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.metric-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: linear-gradient(90deg, #4f46e5, #06b6d4);
-  transform: scaleX(0);
-  transition: transform 0.3s ease;
-}
-
-.metric-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
-}
-
-.metric-card:hover::before {
-  transform: scaleX(1);
-}
-
-.metric-icon {
-  width: 64px;
-  height: 64px;
-  border-radius: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 24px;
-  color: white;
-  position: relative;
-  overflow: hidden;
-}
-
-.products-metric .metric-icon {
-  background: linear-gradient(135deg, #4f46e5, #7c3aed);
-}
-
-.sales-metric .metric-icon {
-  background: linear-gradient(135deg, #06b6d4, #0891b2);
-}
-
-.revenue-metric .metric-icon {
-  background: linear-gradient(135deg, #10b981, #059669);
-}
-
-.warning-metric .metric-icon {
-  background: linear-gradient(135deg, #f59e0b, #d97706);
-}
-
-.metric-content {
-  flex: 1;
-}
-
-.metric-value {
-  display: flex;
-  align-items: baseline;
-  gap: 4px;
-  margin-bottom: 8px;
-}
-
-.animated-number {
-  font-size: 2.5rem;
-  font-weight: 800;
-  color: #1e293b;
-  line-height: 1;
-}
-
-.metric-suffix {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #64748b;
-}
-
-.metric-label {
-  font-size: 0.95rem;
-  color: #64748b;
-  font-weight: 500;
-  margin-bottom: 8px;
-}
-
-.metric-trend {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 0.85rem;
-  font-weight: 600;
-}
-
-.metric-trend.positive {
-  color: #10b981;
-}
-
-.metric-trend.negative {
-  color: #ef4444;
-}
-
-/* Charts Section */
-.charts-section {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 24px;
-  margin-bottom: 32px;
-}
-
-.chart-card {
-  background: white;
-  border-radius: 20px;
-  padding: 28px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  animation: slideInUp 0.6s ease-out both;
-  will-change: transform;
-  transform: translateZ(0); /* GPU acceleration */
-}
-
-.chart-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-}
-
-.chart-header h3 {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: #1e293b;
-  margin: 0;
-}
-
-.chart-controls {
-  display: flex;
-  gap: 8px;
-}
-
-.chart-btn {
-  padding: 6px 12px;
-  border: 1px solid #e2e8f0;
-  background: white;
-  border-radius: 8px;
-  font-size: 0.85rem;
-  font-weight: 500;
-  color: #64748b;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.chart-btn.active,
-.chart-btn:hover {
-  background: #4f46e5;
-  color: white;
-  border-color: #4f46e5;
-}
-
-.chart-legend {
-  display: flex;
-  gap: 16px;
-  align-items: center;
-}
-
-.chart-legend .legend-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 4px 8px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.chart-legend .legend-item:hover {
-  background-color: rgba(79, 70, 229, 0.1);
-}
-
-.chart-legend .legend-color {
-  width: 12px;
-  height: 12px;
-  border-radius: 3px;
-}
-
-.chart-legend .legend-label {
-  font-size: 0.85rem;
-  font-weight: 500;
-  color: #64748b;
-}
-
-.chart-container {
-  height: 300px;
-  position: relative;
-}
-
-.grouped-bar-chart,
-.donut-chart {
-  width: 100%;
-  height: 100%;
-  border-radius: 12px;
-  will-change: transform;
-  transform: translateZ(0); /* GPU acceleration */
-  cursor: crosshair;
-  transition: transform 0.3s ease;
+.dashboard {
+  height: 100vh;
 }
 
 .grouped-bar-chart:hover,
@@ -1475,42 +1119,12 @@ export default {
 .legend-item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 8px 12px;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  will-change: transform, background-color;
+  gap: 15px;
 }
 
-.legend-item:hover {
-  transform: scale(1.05);
-  background-color: rgba(79, 70, 229, 0.1);
-  box-shadow: 0 2px 8px rgba(79, 70, 229, 0.2);
-}
-
-.legend-color {
-  width: 16px;
-  height: 16px;
-  border-radius: 4px;
-}
-
-.legend-label {
-  flex: 1;
-  font-weight: 500;
-  color: #374151;
-}
-
-.legend-value {
-  font-weight: 600;
-  color: #1f2937;
-}
-
-/* Bottom Section */
-.bottom-section {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
+.stat-icon {
+  font-size: 2rem;
+  color: var(--primary-color);
 }
 
 .activity-card,
@@ -1645,244 +1259,19 @@ export default {
   color: #166534;
 }
 
-.activity-status.pending {
-  background: #fef3c7;
-  color: #92400e;
+.stat-info p {
+  margin: 5px 0 0 0;
+  color: #909399;
+  font-size: 0.9rem;
 }
+</style>
 
-/* Products Grid */
-.products-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 20px;
-}
-
-.product-item {
-  border-radius: 16px;
-  overflow: hidden;
-  background: #f8fafc;
-  transition: all 0.3s ease;
-  animation: slideInUp 0.4s ease-out both;
-}
-
-.product-item:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-}
-
-.product-image {
-  position: relative;
-  height: 150px;
-  overflow: hidden;
-}
-
-.product-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.3s ease;
-}
-
-.product-item:hover .product-image img {
-  transform: scale(1.05);
-}
-
-.product-badge {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  background: #4f46e5;
-  color: white;
-  padding: 4px 8px;
-  border-radius: 6px;
-  font-size: 0.7rem;
-  font-weight: 600;
-}
-
-.product-info {
-  padding: 16px;
-}
-
-.product-name {
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: #1f2937;
-  margin: 0 0 8px 0;
-}
-
-.product-rating {
-  margin-bottom: 12px;
-}
-
-.stars {
-  display: flex;
-  gap: 2px;
-}
-
-.star {
-  color: #d1d5db;
-  font-size: 0.85rem;
-}
-
-.star.filled {
-  color: #fbbf24;
-}
-
-.product-price {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 12px;
-}
-
-.current-price {
-  font-weight: 700;
-  color: #1f2937;
-}
-
-.old-price {
-  font-size: 0.85rem;
-  color: #9ca3af;
-  text-decoration: line-through;
-}
-
-.buy-btn {
-  width: 100%;
-  padding: 8px;
-  background: #4f46e5;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.buy-btn:hover {
-  background: #4338ca;
-  transform: translateY(-1px);
-}
-
-/* Responsive Design */
-@media (max-width: 1200px) {
-  .charts-section {
-    grid-template-columns: 1fr;
+<style>
+  .el-card__header {
+    background-color: var(--primary-color);
+    color: var(--text-color-light);
+    font-weight: 600;
+    font-size: 1.1rem;
+    border-bottom: 1px solid var(--border-color);
   }
-  
-  .donut-container {
-    flex-direction: column;
-    height: auto;
-    text-align: center;
-  }
-}
-
-@media (max-width: 768px) {
-  .modern-dashboard {
-    padding: 16px;
-  }
-  
-  .dashboard-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 16px;
-  }
-  
-  .dashboard-title {
-    font-size: 2rem;
-  }
-  
-  .metrics-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .bottom-section {
-    grid-template-columns: 1fr;
-  }
-  
-  .products-grid {
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  }
-}
-
-/* Loading Animation */
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
-}
-
-.loading {
-  animation: pulse 2s infinite;
-}
-
-/* Chart Tooltip Animation */
-@keyframes tooltipFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Chart Performance Optimizations */
-.chart-container canvas {
-  image-rendering: -webkit-optimize-contrast;
-  image-rendering: optimize-contrast;
-  image-rendering: crisp-edges;
-}
-
-/* Reduced Motion Support */
-@media (prefers-reduced-motion: reduce) {
-  .metric-card,
-  .chart-card,
-  .activity-item,
-  .product-item {
-    animation: none;
-  }
-  
-  .sales-chart,
-  .donut-chart,
-  .legend-item {
-    transition: none;
-  }
-  
-  .metric-card:hover,
-  .sales-chart:hover,
-  .donut-chart:hover,
-  .legend-item:hover {
-    transform: none;
-  }
-}
-
-/* High Performance Mode */
-.chart-optimized {
-  will-change: transform, opacity;
-  backface-visibility: hidden;
-  perspective: 1000px;
-}
-
-/* Interactive Chart States */
-.chart-interactive {
-  user-select: none;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-}
-
-/* Segment Hover Effects */
-.segment-highlighted {
-  filter: brightness(1.1) saturate(1.2);
-  transform: scale(1.05);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Bar Hover Effects */
-.bar-highlighted {
-  filter: brightness(1.15) saturate(1.3);
-  box-shadow: 0 8px 25px rgba(79, 70, 229, 0.4);
-  transform: scaleY(1.05);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
 </style>

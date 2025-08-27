@@ -1,5 +1,10 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import MainLayout from '@/layouts/MainLayout.vue'
+import Dashboard from '@/views/Dashboard.vue'
+import Products from '@/views/Products.vue'
+import Sales from '@/views/Sales.vue'
+import Profile from '@/views/Profile.vue'
 
 const routes = [
   {
@@ -14,50 +19,13 @@ const routes = [
   },
   {
     path: '/',
-    component: () => import('@/layouts/MainLayout.vue'),
+    component: MainLayout,
     meta: { requiresAuth: true },
     children: [
-      {
-        path: 'dashboard',
-        name: 'Dashboard',
-        component: () => import('@/views/Dashboard.vue')
-      },
-      {
-        path: 'products',
-        name: 'Products',
-        component: () => import('@/views/Products.vue')
-      },
-      {
-        path: 'products/new',
-        name: 'NewProduct',
-        component: () => import('@/views/ProductForm.vue')
-      },
-      {
-        path: 'products/:id/edit',
-        name: 'EditProduct',
-        component: () => import('@/views/ProductForm.vue')
-      },
-      {
-        path: 'sales',
-        name: 'Sales',
-        component: () => import('@/views/Sales.vue')
-      },
-      {
-        path: 'sales/new',
-        name: 'NewSale',
-        component: () => import('@/views/SaleForm.vue')
-      },
-      {
-        path: 'users',
-        name: 'Users',
-        component: () => import('@/views/Users.vue'),
-        meta: { requiresAdmin: true }
-      },
-      {
-        path: 'profile',
-        name: 'Profile',
-        component: () => import('@/views/Profile.vue')
-      }
+      { path: 'dashboard', component: Dashboard },
+      { path: 'products', component: Products },
+      { path: 'sales', component: Sales },
+      { path: 'profile', component: Profile },
     ]
   },
   {

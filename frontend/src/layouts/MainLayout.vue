@@ -1,212 +1,101 @@
 <template>
-  <div class="app-layout">
-    <!-- Sidebar -->
-    <Sidebar 
-      :class="{ 
-        'sidebar-mobile-open': uiStore.sidebarVisible && isMobile,
-        'sidebar-hidden': !uiStore.sidebarVisible && isMobile 
-      }" 
-    />
-    
-    <!-- Main Content -->
-    <div 
-      class="main-content"
-      :class="{ 
-        'main-content-expanded': uiStore.sidebarCollapsed && !isMobile,
-        'main-content-mobile': isMobile 
-      }"
-    >
-      <!-- Header -->
-      <Header />
-      
-      <!-- Page Content -->
-      <div class="page-content">
-        <router-view />
-      </div>
-    </div>
-
-    <!-- Mobile Overlay -->
-    <div 
-      v-if="isMobile && uiStore.sidebarVisible" 
-      class="mobile-overlay"
-      @click="uiStore.setSidebarVisible(false)"
-    />
-
-    <!-- Loading Overlay -->
-    <div v-if="uiStore.loading" class="loading-overlay">
-      <div class="loading-spinner">
-        <svg class="spinner" width="40" height="40" viewBox="0 0 50 50">
-          <circle
-            class="path"
-            cx="25"
-            cy="25"
-            r="20"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-miterlimit="10"
-          />
-        </svg>
-      </div>
-      <p v-if="uiStore.loadingMessage">{{ uiStore.loadingMessage }}</p>
-    </div>
+  <div class="main-layout">
+    <el-container>
+      <el-header>
+        <div class="header-content">
+          <h1>Gestor de Stock</h1>
+          <div class="user-info">
+            <span>Bienvenido, {{ authStore.user?.name }}</span>
+            <el-button @click="authStore.logout" type="text">Cerrar Sesión</el-button>
+          </div>
+        </div>
+      </el-header>
+      <el-container>
+        <el-aside width="250px">
+          <el-menu :default-active="$route.path" router class="sidebar-menu">
+            <el-menu-item index="/dashboard">
+              <el-icon><DataBoard /></el-icon>
+              <span>Dashboard</span>
+            </el-menu-item>
+            <el-menu-item index="/products">
+              <el-icon><Goods /></el-icon>
+              <span>Productos</span>
+            </el-menu-item>
+            <el-menu-item index="/sales">
+              <el-icon><ShoppingCart /></el-icon>
+              <span>Ventas</span>
+            </el-menu-item>
+            <el-menu-item v-if="authStore.isAdmin" index="/users">
+              <el-icon><User /></el-icon>
+              <span>Usuarios</span>
+            </el-menu-item>
+            <el-menu-item index="/profile">
+              <el-icon><Setting /></el-icon>
+              <span>Perfil</span>
+            </el-menu-item>
+          </el-menu>
+        </el-aside>
+        <el-main>
+          <router-view />
+        </el-main>
+      </el-container>
+    </el-container>
   </div>
 </template>
 
-<script>
-import { ref, onMounted, onUnmounted } from 'vue'
-import { useUIStore } from '@/stores/ui'
-import Sidebar from '@/components/Sidebar.vue'
-import Header from '@/components/Header.vue'
+<script setup>
+import { useAuthStore } from '@/stores/auth'
+import { DataBoard, Goods, ShoppingCart, User, Setting } from '@element-plus/icons-vue'
 
-export default {
-  name: 'MainLayout',
-  components: {
-    Sidebar,
-    Header
-  },
-  setup() {
-    const uiStore = useUIStore()
-    const isMobile = ref(false)
-
-    const checkMobile = () => {
-      isMobile.value = window.innerWidth <= 768
-      
-      // En móvil, ocultar sidebar por defecto
-      if (isMobile.value) {
-        uiStore.setSidebarVisible(false)
-      } else {
-        uiStore.setSidebarVisible(true)
-      }
-    }
-
-    onMounted(() => {
-      checkMobile()
-      window.addEventListener('resize', checkMobile)
-    })
-
-    onUnmounted(() => {
-      window.removeEventListener('resize', checkMobile)
-    })
-
-    return {
-      uiStore,
-      isMobile
-    }
-  }
-}
+const authStore = useAuthStore()
 </script>
 
 <style scoped>
-.app-layout {
-  display: flex;
+.main-layout {
   height: 100vh;
-  overflow: hidden;
 }
 
-.main-content {
-  flex: 1;
+.el-header {
+    height: 12vh;
+  background-color: #fff;
+  border-bottom: 1px solid #e4e7ed;
+  padding: 0 20px;
+}
+
+.header-content {
   display: flex;
-  flex-direction: column;
-  margin-left: 250px;
-  transition: margin-left 0.3s ease;
-  background-color: #f5f7fa;
-  min-height: 100vh;
-}
-
-.main-content-expanded {
-  margin-left: 64px;
-}
-
-.main-content-mobile {
-  margin-left: 0;
-}
-
-.page-content {
-  flex: 1;
-  padding: 24px;
-  overflow-y: auto;
-}
-
-.mobile-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  z-index: 999;
-}
-
-.loading-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(255, 255, 255, 0.9);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
-  z-index: 9999;
+  height: 100%;
 }
 
-.loading-spinner {
+.user-info {
   display: flex;
-  justify-content: center;
   align-items: center;
+  gap: 10px;
 }
 
-.spinner {
-  animation: rotate 2s linear infinite;
-  color: #409eff;
+.el-aside {
+    width: 30vh;
+  background-color: #fff;
+  border-right: 1px solid #e4e7ed;
 }
 
-.path {
-  stroke-dasharray: 90, 150;
-  stroke-dashoffset: 0;
-  stroke-linecap: round;
-  animation: dash 1.5s ease-in-out infinite;
+.sidebar-menu {
+  border-right: none;
 }
 
-@keyframes rotate {
-  100% {
-    transform: rotate(360deg);
-  }
+.sidebar-menu .el-menu-item {
+  height: 90px !important;
+  line-height: 56px !important;
+  font-size: 1.1rem;
+  padding-left: 24px !important;
+  padding-right: 16px !important;
+  border-bottom: 1px solid var(--border-color);
 }
 
-@keyframes dash {
-  0% {
-    stroke-dasharray: 1, 150;
-    stroke-dashoffset: 0;
-  }
-  50% {
-    stroke-dasharray: 90, 150;
-    stroke-dashoffset: -35;
-  }
-  100% {
-    stroke-dasharray: 90, 150;
-    stroke-dashoffset: -124;
-  }
-}
-
-.loading-overlay p {
-  margin-top: 16px;
-  color: #606266;
-  font-size: 14px;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .page-content {
-    padding: 16px;
-  }
-}
-
-@media (max-width: 480px) {
-  .page-content {
-    padding: 12px;
-  }
+.sidebar-menu .el-menu-item .el-icon {
+  font-size: 1.5rem;
+  margin-right: 12px;
 }
 </style>
