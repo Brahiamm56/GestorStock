@@ -4,29 +4,39 @@
       <!-- Información básica -->
       <div class="profile-card">
         <h2 class="section-title">Información básica</h2>
-        <div class="profile-row">
-          <span class="profile-label">Foto de perfil</span>
-          <img
-            class="profile-avatar"
-            :src="form.photo || defaultAvatar"
-            alt="Foto de perfil"
-            @click="triggerImageUpload"
-          />
-          <input
-            ref="fileInput"
-            type="file"
-            accept="image/*"
-            style="display: none"
-            @change="onImageChange"
-          />
-        </div>
-        <el-form
-          ref="formRef"
-          :model="form"
-          :rules="rules"
-          label-width="140px"
-          @submit.prevent="handleSubmit"
-        >
+        <div class="profile-basic-flex">
+          <div class="profile-photo-block">
+            <img
+              class="profile-avatar"
+              :src="form.photo || defaultAvatar"
+              alt="Foto de perfil"
+              @click="triggerImageUpload"
+            />
+            <input
+              ref="fileInput"
+              type="file"
+              accept="image/*"
+              style="display: none"
+              @change="onImageChange"
+            />
+            <el-button
+              class="edit-photo-btn"
+              type="primary"
+              size="small"
+              @click="triggerImageUpload"
+              style="margin-top: 8px;"
+            >
+              Editar
+            </el-button>
+          </div>
+          <el-form
+            ref="formRef"
+            :model="form"
+            :rules="rules"
+            label-width="auto"
+            @submit.prevent="handleSubmit"
+            class="profile-basic-form"
+          >
           <el-form-item label="Nombre" prop="name">
             <el-input v-model="form.name" placeholder="Tu nombre" />
           </el-form-item>
@@ -48,6 +58,7 @@
             </el-select>
           </el-form-item>
         </el-form>
+        </div>
       </div>
 
       <!-- Información de contacto -->
@@ -56,6 +67,9 @@
         <el-form :model="form" label-width="140px">
           <el-form-item label="Email">
             <el-input v-model="form.email" disabled />
+          </el-form-item>
+          <el-form-item label="Teléfono">
+            <el-input v-model="form.phone" placeholder="Tu número de teléfono" />
           </el-form-item>
         </el-form>
       </div>
@@ -76,10 +90,10 @@
             <el-input :value="formatDate(authStore.user?.last_login)" readonly />
           </el-form-item>
         </el-form>
-        <el-button class="profile-btn" type="primary" @click="handleSubmit" :loading="loading">
-          Guardar cambios
-        </el-button>
       </div>
+      <el-button class="profile-btn" type="primary" @click="handleSubmit" :loading="loading">
+        Guardar cambios
+      </el-button>
     </div>
   </div>
 </template>
@@ -103,7 +117,8 @@ export default {
       email: '',
       photo: '',
       birthdate: '',
-      gender: ''
+      gender: '',
+      phone: ''
     })
 
     const rules = {
@@ -129,6 +144,7 @@ export default {
         form.photo = authStore.user.photo || ''
         form.birthdate = authStore.user.birthdate || ''
         form.gender = authStore.user.gender || ''
+        form.phone = authStore.user.phone || ''
       }
     }
 
@@ -221,31 +237,58 @@ export default {
   margin-bottom: 12px;
   color: #222;
 }
-.profile-row {
+.profile-basic-flex {
   display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 40px;
+}
+.profile-photo-block {
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 16px;
-  margin-bottom: 16px;
+  min-width: 140px;
+  max-width: 180px;
+  flex: 0 0 160px;
+}
+.profile-basic-form {
+  flex: 1 1 0%;
+  min-width: 0;
 }
 .profile-label {
-  color: #888;
+  color: var(--text-color-regular);
   font-size: 1rem;
   min-width: 120px;
 }
 .profile-avatar {
-  width: 48px;
-  height: 48px;
+  width: 130px;
+  height: 130px;
   border-radius: 50%;
   object-fit: cover;
   border: 2px solid #ffd6db;
   background: #fafafa;
   cursor: pointer;
 }
+.edit-photo-btn {
+  background: none;
+  color: var(--text-color-regular);
+  border-radius: 8px;
+  border: none;
+  font-size: 0.95rem;
+  padding: 4px 18px;
+  margin-left: 0;
+  transition: background 0.2s;
+}
+.edit-photo-btn:hover {
+  color: var(--primary-color);
+  text-decoration: underline;
+  filter: brightness(0.92);
+}
 .profile-btn {
   width: 100%;
   padding: 0.8rem 0;
   border-radius: 12px;
-  background: linear-gradient(90deg, #ffd6db 0%, #f7b7a3 100%);
+  background: var(--primary-color);
   color: #fff;
   font-size: 1.1rem;
   font-weight: 600;
@@ -255,12 +298,15 @@ export default {
   margin-top: 16px;
 }
 .profile-btn:hover {
-  background: linear-gradient(90deg, #f7b7a3 0%, #ffd6db 100%);
+  background: var(--primary-color);
+  filter: brightness(0.92);
 }
 </style>
 <style>
-.el-form-item__label {
-  line-height: 20px !important;
+.profile-basic-form .el-form-item__label {
   align-items: center;
+  line-height: 20px;
+  text-align: left !important;
+  justify-content: flex-start !important;
 }
 </style>
