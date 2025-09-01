@@ -882,7 +882,7 @@ export default {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: linear-gradient(135deg, var(--primary-blue) 0%, #a1691e 100%);
+  background: linear-gradient(135deg, var(--primary-blue) 0%, #bd7619 100%);
   color: rgb(27, 27, 27);
   border: none;
   border-radius: 12px;
