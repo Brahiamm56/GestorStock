@@ -1,4 +1,4 @@
-<template>
+<template>Nuevo p
   <div class="login-container">
     <div class="login-card">
       <!-- Logo PIPAX -->

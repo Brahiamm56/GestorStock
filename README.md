@@ -1,24 +1,14 @@
 # Gestor de Stock
 
-Sistema completo de gestión de inventario desarrollado con Vue.js, Node.js y PostgreSQL.
+Sistema completo de gestión de inventario desarrollado con Vue.js, Node.js y MySQL.
 
 ## 🚀 Tecnologías
 
 - **Frontend**: Vue.js 3 con Vue Router y Pinia
 - **Backend**: Node.js con Express
-- **Base de datos**: PostgreSQL con Sequelize ORM
+- **Base de datos**: MySQL Browser 
 - **Autenticación**: Firebase Auth
 - **Hosting**: Preparado para Azure/Hostinger
-
-## 📁 Estructura del Proyecto
-
-```
-GestorStock/
-├── frontend/          # Aplicación Vue.js
-├── backend/           # API Node.js/Express
-├── docker-compose.yml # Configuración de contenedores
-└── package.json       # Scripts del monorepo
-```
 
 ## 🛠️ Instalación
 
@@ -27,7 +17,7 @@ GestorStock/
 1. **Instalar dependencias:**
    ```bash
    npm run install:all
-   ```
+
 
 2. **Configurar variables de entorno:**
    - Copiar `.env.example` a `.env` en la carpeta `backend/`
@@ -82,27 +72,3 @@ npm run docker:down
 - `npm run build` - Construye el frontend para producción
 - `npm run docker:up` - Levanta servicios con Docker
 - `npm run docker:down` - Detiene servicios de Docker
-
-## 📝 Variables de Entorno
-
-Crear archivo `.env` en `backend/`:
-
-```env
-# Base de datos
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=gestor_stock
-DB_USER=postgres
-DB_PASSWORD=password
-
-# Firebase
-FIREBASE_PROJECT_ID=tu-proyecto-id
-FIREBASE_PRIVATE_KEY=tu-clave-privada
-FIREBASE_CLIENT_EMAIL=tu-email
-
-# JWT
-JWT_SECRET=tu-secreto-jwt
-
-# Puerto del servidor
-PORT=5000
-```

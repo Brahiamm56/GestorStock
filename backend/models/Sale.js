@@ -14,7 +14,7 @@ const Sale = sequelize.define('Sale', {
   },
   customer_dni: {
     type: DataTypes.STRING,
-    allowNull: false
+    allowNull: true
   },
   customer_name: {
     type: DataTypes.STRING,
@@ -28,7 +28,7 @@ const Sale = sequelize.define('Sale', {
     }
   },
   payment_method: {
-    type: DataTypes.ENUM('cash', 'card', 'transfer'),
+    type: DataTypes.ENUM('cash', 'card', 'transfer', 'mercadopago'),
     defaultValue: 'cash'
   },
   status: {

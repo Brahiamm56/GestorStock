@@ -1,8 +1,7 @@
 const { Sale, SaleItem, Product, User } = require('../models');
 const { sequelize } = require('../config/database');
+const { Op } = require('sequelize');
 const PDFDocument = require('pdfkit');
-const fs = require('fs');
-const path = require('path');
 
 const saleController = {
   // Obtener todas las ventas
@@ -104,6 +103,9 @@ const saleController = {
     const transaction = await sequelize.transaction();
     
     try {
+      console.log('📝 Datos recibidos para crear venta:', req.body);
+      console.log('👤 Usuario autenticado:', req.user);
+      
       const {
         customer_dni,
         customer_name,
@@ -146,6 +148,28 @@ const saleController = {
         });
       }
 
+      // Verificar si el usuario existe en la base de datos
+      const { User } = require('../models');
+      let soldBy = null;
+      
+      if (req.user?.uid) {
+        const existingUser = await User.findOne({ where: { firebase_uid: req.user.uid } });
+        if (existingUser) {
+          soldBy = existingUser.id;
+        } else {
+          console.log('⚠️ Usuario no encontrado en BD, creando usuario...');
+          // Crear usuario si no existe
+          const newUser = await User.create({
+            firebase_uid: req.user.uid,
+            email: req.user.email,
+            name: req.user.email.split('@')[0],
+            role: req.user.role || 'user',
+            is_active: true
+          }, { transaction });
+          soldBy = newUser.id;
+        }
+      }
+
       // Crear la venta
       const sale = await Sale.create({
         sale_number: saleNumber,
@@ -154,7 +178,7 @@ const saleController = {
         total_amount: totalAmount,
         payment_method,
         notes,
-        sold_by: req.user.uid
+        sold_by: soldBy
       }, { transaction });
 
       // Crear items de venta y actualizar stock
@@ -206,6 +230,8 @@ const saleController = {
     try {
       const { id } = req.params;
       
+      console.log('🔍 Generando comprobante para venta:', id);
+      
       const sale = await Sale.findByPk(id, {
         include: [
           {
@@ -228,31 +254,40 @@ const saleController = {
       });
 
       if (!sale) {
+        console.log('❌ Venta no encontrada:', id);
         return res.status(404).json({ error: 'Venta no encontrada' });
       }
 
-      // Crear documento PDF
-      const doc = new PDFDocument();
-      const fileName = `comprobante-${sale.sale_number}.pdf`;
-      const filePath = path.join(__dirname, '../temp', fileName);
-      
-      // Asegurar que existe el directorio temp
-      if (!fs.existsSync(path.dirname(filePath))) {
-        fs.mkdirSync(path.dirname(filePath), { recursive: true });
-      }
+      console.log('✅ Venta encontrada:', sale.sale_number);
+      console.log('📦 Items:', sale.items?.length || 0);
 
-      const stream = fs.createWriteStream(filePath);
-      doc.pipe(stream);
+      // Crear documento PDF en memoria
+      const doc = new PDFDocument({
+        size: 'A4',
+        margins: {
+          top: 50,
+          bottom: 50,
+          left: 50,
+          right: 50
+        }
+      });
+
+      const chunks = [];
+
+      // Capturar chunks del PDF
+      doc.on('data', (chunk) => {
+        chunks.push(chunk);
+      });
 
       // Configurar el documento
       doc.fontSize(20).text('COMPROBANTE DE VENTA', { align: 'center' });
       doc.moveDown();
       
       doc.fontSize(12).text(`Número de Venta: ${sale.sale_number}`);
-      doc.text(`Fecha: ${sale.created_at.toLocaleDateString()}`);
-      doc.text(`Cliente: ${sale.customer_name}`);
-      doc.text(`DNI: ${sale.customer_dni}`);
-      doc.text(`Vendedor: ${sale.seller.name}`);
+      doc.text(`Fecha: ${sale.created_at.toLocaleDateString('es-ES')}`);
+      doc.text(`Cliente: ${sale.customer_name || 'N/A'}`);
+      doc.text(`DNI: ${sale.customer_dni || 'N/A'}`);
+      doc.text(`Vendedor: ${sale.seller?.name || 'N/A'}`);
       doc.moveDown();
 
       // Tabla de productos
@@ -271,11 +306,16 @@ const saleController = {
       doc.moveDown();
 
       // Items de la venta
-      for (const item of sale.items) {
-        doc.text(item.product.name, 50, doc.y, { width: 200 });
-        doc.text(item.quantity.toString(), 250, doc.y - 15, { width: 80 });
-        doc.text(`$${item.unit_price.toFixed(2)}`, 330, doc.y - 15, { width: 80 });
-        doc.text(`$${item.total_price.toFixed(2)}`, 410, doc.y - 15, { width: 80 });
+      if (sale.items && sale.items.length > 0) {
+        for (const item of sale.items) {
+          doc.text(item.product?.name || 'Producto no encontrado', 50, doc.y, { width: 200 });
+          doc.text(item.quantity.toString(), 250, doc.y - 15, { width: 80 });
+          doc.text(`$${(item.unit_price || 0).toFixed(2)}`, 330, doc.y - 15, { width: 80 });
+          doc.text(`$${(item.total_price || 0).toFixed(2)}`, 410, doc.y - 15, { width: 80 });
+          doc.moveDown();
+        }
+      } else {
+        doc.text('No hay productos en esta venta', 50, doc.y, { width: 400 });
         doc.moveDown();
       }
 
@@ -284,32 +324,49 @@ const saleController = {
       doc.moveDown();
 
       // Total
-      doc.fontSize(14).text(`TOTAL: $${sale.total_amount.toFixed(2)}`, { align: 'right' });
+      doc.fontSize(14).text(`TOTAL: $${(sale.total_amount || 0).toFixed(2)}`, { align: 'right' });
       doc.moveDown();
 
       // Método de pago
-      doc.fontSize(12).text(`Método de Pago: ${sale.payment_method.toUpperCase()}`);
+      if (sale.payment_method) {
+        doc.fontSize(12).text(`Método de Pago: ${sale.payment_method.toUpperCase()}`);
+      }
       
       if (sale.notes) {
         doc.moveDown();
         doc.text(`Notas: ${sale.notes}`);
       }
 
+      // Finalizar documento
       doc.end();
 
-      // Enviar archivo
-      stream.on('finish', () => {
-        res.download(filePath, fileName, (err) => {
-          if (err) {
-            console.error('Error al enviar archivo:', err);
-          }
-          // Eliminar archivo temporal
-          fs.unlinkSync(filePath);
-        });
+      // Esperar a que se complete la generación
+      doc.on('end', () => {
+        try {
+          const pdfBuffer = Buffer.concat(chunks);
+          console.log('✅ PDF generado, tamaño:', pdfBuffer.length, 'bytes');
+          
+          // Configurar headers para descarga
+          res.setHeader('Content-Type', 'application/pdf');
+          res.setHeader('Content-Disposition', `attachment; filename="comprobante-${sale.sale_number}.pdf"`);
+          res.setHeader('Content-Length', pdfBuffer.length);
+          
+          // Enviar el PDF como buffer
+          res.send(pdfBuffer);
+        } catch (sendError) {
+          console.error('❌ Error al enviar PDF:', sendError);
+          res.status(500).json({ error: 'Error al enviar PDF' });
+        }
+      });
+
+      // Manejar errores del documento
+      doc.on('error', (error) => {
+        console.error('❌ Error en generación de PDF:', error);
+        res.status(500).json({ error: 'Error al generar PDF' });
       });
 
     } catch (error) {
-      console.error('Error al generar comprobante:', error);
+      console.error('❌ Error al generar comprobante:', error);
       res.status(500).json({ error: 'Error interno del servidor' });
     }
   },

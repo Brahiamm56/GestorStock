@@ -56,19 +56,43 @@ app.use((req, res, next) => {
 
 // Servir archivos estáticos (imágenes) con CORS
 app.use('/uploads', (req, res, next) => {
-  res.header('Access-Control-Allow-Origin', 'http://localhost:3000');
-  res.header('Access-Control-Allow-Methods', 'GET');
-  res.header('Access-Control-Allow-Headers', 'Content-Type');
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.header('Cache-Control', 'public, max-age=31536000');
   next();
 }, express.static(path.join(__dirname, 'uploads')));
 
-// Rutas
-app.use('/api/auth', authRoutes);
-app.use('/api/products', productRoutes);
-app.use('/api/sales', saleRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/upload', uploadRoutes);
-app.use('/api/dashboard', dashboardRoutes);
+// Rutas con logging adicional
+app.use('/api/auth', (req, res, next) => {
+  console.log('🔗 Auth route accessed:', req.method, req.url);
+  next();
+}, authRoutes);
+
+app.use('/api/products', (req, res, next) => {
+  console.log('🔗 Products route accessed:', req.method, req.url);
+  next();
+}, productRoutes);
+
+app.use('/api/sales', (req, res, next) => {
+  console.log('🔗 Sales route accessed:', req.method, req.url);
+  next();
+}, saleRoutes);
+
+app.use('/api/users', (req, res, next) => {
+  console.log('🔗 Users route accessed:', req.method, req.url);
+  next();
+}, userRoutes);
+
+app.use('/api/upload', (req, res, next) => {
+  console.log('🔗 Upload route accessed:', req.method, req.url);
+  next();
+}, uploadRoutes);
+
+app.use('/api/dashboard', (req, res, next) => {
+  console.log('🔗 Dashboard route accessed:', req.method, req.url);
+  next();
+}, dashboardRoutes);
 
 // Ruta de salud
 app.get('/api/health', (req, res) => {

@@ -14,6 +14,9 @@ const api = axios.create({
 // Interceptor para agregar token de autenticación
 api.interceptors.request.use(
   async (config) => {
+    console.log('🔍 API Request:', config.method?.toUpperCase(), config.url)
+    console.log('🔍 Full URL:', config.baseURL + config.url)
+    
     const auth = getAuth()
     const user = auth.currentUser
     
