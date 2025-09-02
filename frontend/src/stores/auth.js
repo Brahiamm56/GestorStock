@@ -118,6 +118,28 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  // Actualizar imagen de perfil
+  const updateProfileImage = async (imageFile) => {
+    try {
+      const formData = new FormData()
+      formData.append('profile_image', imageFile)
+      
+      const response = await api.put('/auth/profile-image', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      })
+      
+      user.value = response.data.user
+      toast.success('Imagen de perfil actualizada correctamente')
+      return true
+    } catch (error) {
+      console.error('Error al actualizar imagen de perfil:', error)
+      toast.error('Error al actualizar imagen de perfil')
+      return false
+    }
+  }
+
   return {
     user,
     loading,
@@ -125,6 +147,7 @@ export const useAuthStore = defineStore('auth', () => {
     isAdmin,
     login,
     logout,
-    updateProfile
+    updateProfile,
+    updateProfileImage
   }
 })

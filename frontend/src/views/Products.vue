@@ -1,18 +1,31 @@
 <template>
   <div class="products-admin-page" :class="{ 'sidebar-open': sidebarOpen }">
-    <!-- Header Principal -->
+    <!-- Header Principal con Sombra -->
     <div class="page-header">
-      <h1 class="page-title">Administrar Productos</h1>
-      <button class="add-product-btn" @click="openSidebar">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        Nuevo Producto
-      </button>
+      <div class="header-content">
+        <div class="header-left">
+          <h1 class="page-title">Productos</h1>
+          <p class="page-subtitle">Administra tu catálogo de productos</p>
+        </div>
+        <button class="add-product-btn" @click="openSidebar">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Nuevo Producto
+        </button>
+      </div>
     </div>
 
-    <!-- Sistema de Filtros -->
+    <!-- Sistema de Filtros con Header -->
     <div class="filters-section">
+      <div class="filters-header">
+        <h3 class="filters-title">Filtros y Búsqueda</h3>
+        <div class="filters-actions">
+          <button class="clear-filters-btn" @click="clearFilters" v-if="hasActiveFilters">
+            Limpiar Filtros
+          </button>
+        </div>
+      </div>
       <div class="filters-container">
         <!-- Barra de Búsqueda -->
         <div class="search-container">
@@ -1175,24 +1188,48 @@ export default {
 <style scoped>
 .products-admin-page {
   padding: 2rem;
-  background: #f8fafc;
+  background: var(--bg-cream-primary);
   min-height: 100vh;
 }
 
 /* Header */
 .page-header {
+  background: var(--bg-white);
+  border-radius: 16px;
+  padding: 24px 32px;
+  margin-bottom: 2rem;
+  box-shadow: var(--header-shadow);
+  border: 1px solid var(--border-light);
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
+}
+
+.header-content {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
+}
+
+.header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .page-title {
   font-size: 2.5rem;
   font-weight: 700;
-  color: #333333;
+  color: var(--text-primary);
   margin: 0;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.page-subtitle {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  margin: 0;
+  font-weight: 500;
 }
 
 .add-product-btn {
@@ -1217,12 +1254,58 @@ export default {
 
 /* Filtros */
 .filters-section {
-  background: white;
+  background: var(--bg-white);
   border-radius: 16px;
-  padding: 1.5rem;
   margin-bottom: 2rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  border: 1px solid #e5e7eb;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border-light);
+  overflow: hidden;
+}
+
+.filters-header {
+  background: var(--bg-white);
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border-light);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.filters-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.filters-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.clear-filters-btn {
+  padding: 8px 16px;
+  background: var(--bg-cream-secondary);
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.clear-filters-btn:hover {
+  background: var(--border-light);
+  color: var(--text-primary);
+}
+
+.filters-container {
+  padding: 24px;
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
 }
 
 .filters-container {

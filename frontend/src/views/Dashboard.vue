@@ -1,25 +1,26 @@
 <template>
   <div class="sales-dashboard">
-    <!-- Header Section -->
+    <!-- Enhanced Header Section -->
     <div class="dashboard-header">
       <div class="header-left">
         <h1 class="dashboard-title">Invoice Overview</h1>
+        <p class="dashboard-subtitle">Análisis completo de ventas y rendimiento</p>
         <div class="sort-filter">
-          <label>Sort by:</label>
+          <label class="filter-label">Filtrar por período:</label>
           <select v-model="selectedPeriod" @change="updatePeriod" class="period-dropdown">
-            <option value="weekly">Weekly</option>
-            <option value="monthly">Monthly</option>
-            <option value="yearly">Yearly</option>
+            <option value="weekly">Semanal</option>
+            <option value="monthly">Mensual</option>
+            <option value="yearly">Anual</option>
           </select>
         </div>
       </div>
       <div class="header-right">
-        <h2 class="order-stats-title">Order Stats</h2>
+        <h2 class="order-stats-title">Estadísticas de Pedidos</h2>
         <div class="period-selector">
           <select v-model="orderStatsPeriod" class="period-dropdown">
-            <option value="monthly">Monthly</option>
-            <option value="weekly">Weekly</option>
-            <option value="daily">Daily</option>
+            <option value="monthly">Mensual</option>
+            <option value="weekly">Semanal</option>
+            <option value="daily">Diario</option>
           </select>
         </div>
       </div>
@@ -27,10 +28,17 @@
 
     <!-- Main Dashboard Grid -->
     <div class="dashboard-grid">
-      <!-- Revenue Section -->
+      <!-- Enhanced Revenue Section -->
       <div class="revenue-section">
         <div class="revenue-card">
-          <h3>Total Revenue:</h3>
+          <div class="card-header">
+            <h3 class="card-title">Ingresos Totales</h3>
+            <div class="card-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+              </svg>
+            </div>
+          </div>
           <div class="revenue-amount">${{ formatNumber(overview.totalRevenue) }}</div>
           <div class="revenue-period">{{ overview.dateRange }}</div>
           <div class="revenue-metrics">
@@ -41,106 +49,160 @@
           </div>
           <div class="profit-metrics">
             <div class="metric">
-              <span class="metric-label">● Net Profit</span>
+              <span class="metric-label">● Beneficio Neto</span>
               <span class="metric-value">{{ formatNumber(overview.netProfit) }}</span>
             </div>
             <div class="metric">
-              <span class="metric-label">● Net Revenue</span>
+              <span class="metric-label">● Ingresos Netos</span>
               <span class="metric-value">{{ formatNumber(overview.netRevenue) }}</span>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Bar Chart Section -->
+      <!-- Enhanced Bar Chart Section -->
       <div class="chart-section">
-        <h3 class="chart-title">Monthly Revenue</h3>
-        <BarChart 
-          :data="monthlyData" 
-          :width="400" 
-          :height="200"
-          :loading="loading"
-          @bar-click="handleBarClick"
-          @bar-hover="handleBarHover"
-        />
+        <div class="chart-card">
+          <div class="chart-header">
+            <h3 class="chart-title">Ingresos Mensuales</h3>
+            <div class="chart-actions">
+              <button class="chart-btn" @click="refreshChart">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 2v6h-6"></path>
+                  <path d="M3 12a9 9 0 0 1 15-6.7L21 8"></path>
+                  <path d="M3 22v-6h6"></path>
+                  <path d="M21 12a9 9 0 0 1-15 6.7L3 16"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="chart-content">
+            <BarChart 
+              :data="monthlyData" 
+              :width="400" 
+              :height="200"
+              :loading="loading"
+              @bar-click="handleBarClick"
+              @bar-hover="handleBarHover"
+            />
+          </div>
+        </div>
       </div>
 
-      <!-- Donut Chart Section -->
+      <!-- Enhanced Donut Chart Section -->
       <div class="donut-section">
-        <h3 class="chart-title">Order Statistics</h3>
-        <DonutChart 
-          :data="orderStatsChartData" 
-          :size="200"
-          :loading="loading"
-          @segment-click="handleSegmentClick"
-          @segment-hover="handleSegmentHover"
-        />
+        <div class="chart-card">
+          <div class="chart-header">
+            <h3 class="chart-title">Estadísticas de Pedidos</h3>
+            <div class="chart-actions">
+              <button class="chart-btn" @click="refreshChart">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 2v6h-6"></path>
+                  <path d="M3 12a9 9 0 0 1 15-6.7L21 8"></path>
+                  <path d="M3 22v-6h6"></path>
+                  <path d="M21 12a9 9 0 0 1-15 6.7L3 16"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="chart-content">
+            <DonutChart 
+              :data="orderStatsChartData" 
+              :size="200"
+              :loading="loading"
+              @segment-click="handleSegmentClick"
+              @segment-hover="handleSegmentHover"
+            />
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- Bottom Section -->
+    <!-- Enhanced Bottom Section -->
     <div class="bottom-section">
-      <!-- Sales by Social Source -->
+      <!-- Enhanced Sales by Social Source -->
       <div class="social-sales-section">
-        <h3 class="section-title">Sales By Social Source</h3>
-        <div class="social-list">
-          <div v-for="source in socialSources" :key="source.name" class="social-item">
-            <div class="social-icon" :class="source.platform">
-              <i :class="source.icon"></i>
+        <div class="section-card">
+          <div class="section-header">
+            <h3 class="section-title">Ventas por Red Social</h3>
+            <div class="section-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
+              </svg>
             </div>
-            <div class="social-info">
-              <div class="social-name">{{ source.name }}</div>
-              <div class="social-stats">{{ source.sales }} Sale</div>
-            </div>
-            <div class="social-revenue">
-              <div class="revenue-amount">${{ formatNumber(source.revenue) }}</div>
-              <div class="revenue-growth" :class="{ positive: source.growth >= 0 }">
-                {{ source.growth >= 0 ? '+' : '' }}{{ source.growth }}%
+          </div>
+          <div class="social-list">
+            <div v-for="source in socialSources" :key="source.name" class="social-item">
+              <div class="social-icon" :class="source.platform">
+                <i :class="source.icon"></i>
+              </div>
+              <div class="social-info">
+                <div class="social-name">{{ source.name }}</div>
+                <div class="social-stats">{{ source.sales }} Venta</div>
+              </div>
+              <div class="social-revenue">
+                <div class="revenue-amount">${{ formatNumber(source.revenue) }}</div>
+                <div class="revenue-growth" :class="{ positive: source.growth >= 0 }">
+                  {{ source.growth >= 0 ? '+' : '' }}{{ source.growth }}%
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Product Trading Activity -->
+      <!-- Enhanced Product Trading Activity -->
       <div class="activity-section">
-        <div class="activity-header">
-          <h3 class="section-title">Product Trading</h3>
-          <button class="view-all-btn">View All</button>
-        </div>
-        <div class="activity-list">
-          <div v-for="activity in recentActivities" :key="activity.id" class="activity-item">
-            <div class="activity-avatar">
-              <img :src="activity.avatar" :alt="activity.user" />
-            </div>
-            <div class="activity-content">
-              <div class="activity-description">{{ activity.description }}</div>
-              <div class="activity-status" :class="activity.status">{{ activity.statusText }}</div>
-            </div>
-            <div class="activity-time">
-              <div class="time">{{ activity.time }}</div>
-              <div class="date">{{ activity.date }}</div>
+        <div class="section-card">
+          <div class="section-header">
+            <h3 class="section-title">Actividad de Productos</h3>
+            <button class="view-all-btn">Ver Todo</button>
+          </div>
+          <div class="activity-list">
+            <div v-for="activity in recentActivities" :key="activity.id" class="activity-item">
+              <div class="activity-avatar">
+                <img :src="activity.avatar" :alt="activity.user" />
+              </div>
+              <div class="activity-content">
+                <div class="activity-description">{{ activity.description }}</div>
+                <div class="activity-status" :class="activity.status">{{ activity.statusText }}</div>
+              </div>
+              <div class="activity-time">
+                <div class="time">{{ activity.time }}</div>
+                <div class="date">{{ activity.date }}</div>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Best Selling Products -->
+      <!-- Enhanced Best Selling Products -->
       <div class="products-section">
-        <h3 class="section-title">Best Selling Product</h3>
-        <div class="products-grid">
-          <div v-for="product in bestProducts" :key="product.id" class="product-card">
-            <div class="product-image">
-              <img :src="product.image" :alt="product.name" />
-              <div v-if="product.badge" class="product-badge">{{ product.badge }}</div>
+        <div class="section-card">
+          <div class="section-header">
+            <h3 class="section-title">Productos Más Vendidos</h3>
+            <div class="section-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 7l-8-4-8 4"></path>
+                <path d="M20 7v10l-8 4-8-4V7"></path>
+                <path d="M12 3v16"></path>
+              </svg>
             </div>
-            <div class="product-info">
-              <h4 class="product-name">{{ product.name }}</h4>
-              <div class="product-pricing">
-                <span v-if="product.originalPrice" class="original-price">${{ product.originalPrice }}</span>
-                <span class="current-price">${{ product.price }}</span>
+          </div>
+          <div class="products-grid">
+            <div v-for="product in bestProducts" :key="product.id" class="product-card">
+              <div class="product-image">
+                <img :src="product.image" :alt="product.name" />
+                <div v-if="product.badge" class="product-badge">{{ product.badge }}</div>
               </div>
-              <button class="buy-now-btn">Buy Now</button>
+              <div class="product-info">
+                <h4 class="product-name">{{ product.name }}</h4>
+                <div class="product-pricing">
+                  <span v-if="product.originalPrice" class="original-price">${{ product.originalPrice }}</span>
+                  <span class="current-price">${{ product.price }}</span>
+                </div>
+                <button class="buy-now-btn">Comprar Ahora</button>
+              </div>
             </div>
           </div>
         </div>
@@ -172,25 +234,25 @@ export default {
     
     const overview = reactive({
       totalRevenue: 45231.89,
-      dateRange: 'Last 30 days',
+      dateRange: 'Últimos 30 días',
       growth: 20.1,
       netProfit: 12560,
       netRevenue: 32671
     })
     
     const monthlyData = ref([
-      { month: 'Jan', revenue: 12000 },
+      { month: 'Ene', revenue: 12000 },
       { month: 'Feb', revenue: 19000 },
       { month: 'Mar', revenue: 15000 },
-      { month: 'Apr', revenue: 25000 },
+      { month: 'Abr', revenue: 25000 },
       { month: 'May', revenue: 22000 },
       { month: 'Jun', revenue: 30000 },
       { month: 'Jul', revenue: 28000 },
-      { month: 'Aug', revenue: 35000 },
+      { month: 'Ago', revenue: 35000 },
       { month: 'Sep', revenue: 32000 },
       { month: 'Oct', revenue: 40000 },
       { month: 'Nov', revenue: 38000 },
-      { month: 'Dec', revenue: 45000 }
+      { month: 'Dic', revenue: 45000 }
     ])
     
     const orderStatsData = reactive({
@@ -198,28 +260,6 @@ export default {
       processing: { count: 234, percentage: 20 },
       cancelled: { count: 123, percentage: 10 }
     })
-
-    // Computed data for donut chart
-    const orderStatsChartData = computed(() => [
-      {
-        label: 'Order Completed',
-        value: orderStatsData.completed.count,
-        percentage: orderStatsData.completed.percentage,
-        color: '#10B981'
-      },
-      {
-        label: 'Order Processing',
-        value: orderStatsData.processing.count,
-        percentage: orderStatsData.processing.percentage,
-        color: '#3B82F6'
-      },
-      {
-        label: 'Order Cancel',
-        value: orderStatsData.cancelled.count,
-        percentage: orderStatsData.cancelled.percentage,
-        color: '#EF4444'
-      }
-    ])
     
     const socialSources = ref([
       {
@@ -323,24 +363,28 @@ export default {
       fetchDashboardData()
     }
 
-    // Chart event handlers
-    const handleBarClick = (data, index) => {
-      console.log('Bar clicked:', data, index)
+    const refreshChart = () => {
+      console.log('Chart refreshed')
+      // Implement actual chart refresh logic here if needed
+    }
+
+    const handleBarClick = (data) => {
+      console.log('Bar chart clicked:', data)
       // Handle bar click event
     }
 
-    const handleBarHover = (data, index) => {
-      console.log('Bar hovered:', data, index)
+    const handleBarHover = (data) => {
+      console.log('Bar chart hovered:', data)
       // Handle bar hover event
     }
 
-    const handleSegmentClick = (data, index) => {
-      console.log('Segment clicked:', data, index)
+    const handleSegmentClick = (data) => {
+      console.log('Donut chart segment clicked:', data)
       // Handle segment click event
     }
 
-    const handleSegmentHover = (data, index) => {
-      console.log('Segment hovered:', data, index)
+    const handleSegmentHover = (data) => {
+      console.log('Donut chart segment hovered:', data)
       // Handle segment hover event
     }
     
@@ -388,6 +432,8 @@ export default {
         
         // Redraw charts
         await nextTick()
+        // drawBarChart() // This function is replaced by BarChart component
+        // drawDonutChart() // This function is replaced by DonutChart component
         
       } catch (error) {
         console.error('Error fetching dashboard data:', error)
@@ -396,7 +442,29 @@ export default {
       }
     }
     
-
+    // Computed properties
+    const orderStatsChartData = computed(() => {
+      return [
+        {
+          label: 'Completados',
+          value: orderStatsData.completed.count,
+          percentage: orderStatsData.completed.percentage,
+          color: '#10B981'
+        },
+        {
+          label: 'En Proceso',
+          value: orderStatsData.processing.count,
+          percentage: orderStatsData.processing.percentage,
+          color: '#F59E0B'
+        },
+        {
+          label: 'Cancelados',
+          value: orderStatsData.cancelled.count,
+          percentage: orderStatsData.cancelled.percentage,
+          color: '#EF4444'
+        }
+      ]
+    })
     
     // Lifecycle
     onMounted(async () => {
@@ -409,17 +477,18 @@ export default {
       loading,
       overview,
       monthlyData,
-      orderStatsChartData,
       orderStatsData,
       socialSources,
       recentActivities,
       bestProducts,
       formatNumber,
       updatePeriod,
+      refreshChart,
       handleBarClick,
       handleBarHover,
       handleSegmentClick,
-      handleSegmentHover
+      handleSegmentHover,
+      orderStatsChartData
     }
   }
 }
@@ -427,10 +496,58 @@ export default {
 
 <style scoped>
 .sales-dashboard {
-  padding: 20px;
-  background-color: #f8fafc;
+  padding: 32px;
+  background: var(--bg-cream-primary);
   min-height: 100vh;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  position: relative;
+  animation: fadeInUp 0.8s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.sales-dashboard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    radial-gradient(circle at 20% 80%, rgba(139, 92, 246, 0.02) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(59, 130, 246, 0.02) 0%, transparent 50%);
+  pointer-events: none;
 }
 
 /* Header Section */
@@ -438,11 +555,26 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 30px;
-  background: white;
-  padding: 20px;
-  border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-bottom: 32px;
+  background: var(--bg-white);
+  padding: 24px 32px;
+  border-radius: 16px;
+  box-shadow: var(--header-shadow);
+  border: 1px solid var(--border-light);
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
+  overflow: hidden;
+}
+
+.dashboard-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #8b5cf6, #3b82f6, #10b981);
 }
 
 .header-left, .header-right {
@@ -452,10 +584,20 @@ export default {
 }
 
 .dashboard-title {
-  font-size: 24px;
-  font-weight: 600;
+  font-size: 32px;
+  font-weight: 700;
   color: #1e293b;
   margin: 0;
+  background: linear-gradient(135deg, #1e293b 0%, #475569 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.dashboard-subtitle {
+  font-size: 14px;
+  color: #64748b;
+  margin-bottom: 10px;
 }
 
 .order-stats-title {
@@ -471,56 +613,117 @@ export default {
   gap: 8px;
 }
 
-.sort-filter label {
+.filter-label {
   font-size: 14px;
   color: #64748b;
   font-weight: 500;
 }
 
 .period-dropdown {
-  padding: 8px 12px;
-  border: 1px solid #e2e8f0;
-  border-radius: 6px;
+  padding: 10px 16px;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
   background: white;
   font-size: 14px;
   color: #374151;
   cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  min-width: 120px;
+}
+
+.period-dropdown:hover {
+  border-color: #8b5cf6;
+  box-shadow: 0 2px 8px rgba(139, 92, 246, 0.1);
 }
 
 .period-dropdown:focus {
   outline: none;
   border-color: #8b5cf6;
   box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+  transform: translateY(-1px);
 }
 
 /* Main Dashboard Grid */
 .dashboard-grid {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
-  gap: 20px;
-  margin-bottom: 30px;
+  gap: 24px;
+  margin-bottom: 32px;
 }
 
 /* Revenue Section */
 .revenue-section {
-  background: white;
-  border-radius: 12px;
-  padding: 24px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  background: var(--bg-white);
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border-light);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  animation: slideInLeft 0.8s ease-out 0.1s both;
 }
 
-.revenue-card h3 {
-  font-size: 16px;
-  color: #64748b;
-  margin: 0 0 12px 0;
-  font-weight: 500;
+.revenue-section:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.2);
+  border-color: #8b5cf6;
+}
+
+.revenue-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #10b981, #3b82f6);
+}
+
+.revenue-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.card-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0;
+}
+
+.card-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f3f4f6;
+  color: #6b7280;
+  font-size: 20px;
 }
 
 .revenue-amount {
-  font-size: 32px;
-  font-weight: 700;
-  color: #1e293b;
-  margin-bottom: 8px;
+  font-size: 48px;
+  font-weight: 800;
+  background: linear-gradient(135deg, #10b981 0%, #3b82f6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 12px;
+  text-align: center;
 }
 
 .revenue-period {
@@ -529,13 +732,19 @@ export default {
   margin-bottom: 16px;
 }
 
+.revenue-metrics {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
 .revenue-growth {
   display: flex;
   align-items: center;
   gap: 4px;
   font-size: 14px;
   font-weight: 600;
-  margin-bottom: 20px;
 }
 
 .revenue-growth.positive {
@@ -554,6 +763,7 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  width: 100%;
 }
 
 .metric {
@@ -574,46 +784,275 @@ export default {
 
 /* Chart Sections */
 .chart-section, .donut-section {
-  background: white;
-  border-radius: 12px;
-  padding: 24px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  background: var(--bg-white);
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border-light);
   display: flex;
   flex-direction: column;
   align-items: center;
-  min-height: 280px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.chart-section {
+  animation: slideInUp 0.8s ease-out 0.2s both;
+}
+
+.donut-section {
+  animation: slideInUp 0.8s ease-out 0.3s both;
+}
+
+.chart-section:hover, .donut-section:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.2);
+  border-color: #8b5cf6;
+}
+
+.chart-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #8b5cf6, #a478c7);
+}
+
+.donut-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #10b981, #3b82f6, #ef4444);
+}
+
+.chart-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 16px;
 }
 
 .chart-title {
-  font-size: 16px;
+  font-size: 20px;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+  background: linear-gradient(135deg, #1e293b 0%, #475569 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.chart-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.chart-btn {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border: 2px solid #e2e8f0;
+  color: #64748b;
+  padding: 8px;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.chart-btn:hover {
+  background: linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%);
+  border-color: #8b5cf6;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(139, 92, 246, 0.3);
+}
+
+.chart-btn svg {
+  width: 18px;
+  height: 18px;
+  transition: transform 0.3s ease;
+}
+
+.chart-btn:hover svg {
+  transform: rotate(180deg);
+}
+
+.chart-content {
+  width: 100%;
+  max-width: 400px;
+  height: 200px;
+}
+
+.bar-chart {
+  width: 100%;
+  max-width: 400px;
+  height: 200px;
+}
+
+.donut-chart {
+  width: 200px;
+  height: 200px;
+  margin-bottom: 20px;
+}
+
+.order-stats-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.legend-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.legend-dot.completed {
+  background-color: #10b981;
+}
+
+.legend-dot.processing {
+  background-color: #f59e0b;
+}
+
+.legend-dot.cancelled {
+  background-color: #ef4444;
+}
+
+.legend-label {
+  flex: 1;
+  color: #374151;
+}
+
+.legend-value {
   font-weight: 600;
   color: #1e293b;
-  margin: 0 0 20px 0;
-  text-align: center;
+  margin-right: 8px;
+}
+
+.legend-percentage {
+  font-size: 12px;
+  color: #64748b;
 }
 
 /* Bottom Section */
 .bottom-section {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
-  gap: 20px;
+  gap: 24px;
 }
 
-.social-sales-section, .activity-section, .products-section {
-  background: white;
-  border-radius: 12px;
-  padding: 24px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+.section-card {
+  background: var(--bg-white);
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border-light);
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.social-sales-section {
+  animation: slideInUp 0.8s ease-out 0.4s both;
+}
+
+.activity-section {
+  animation: slideInUp 0.8s ease-out 0.5s both;
+}
+
+.products-section {
+  animation: slideInUp 0.8s ease-out 0.6s both;
+}
+
+.section-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.2);
+  border-color: #8b5cf6;
+}
+
+.section-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #8b5cf6, #3b82f6);
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
 }
 
 .section-title {
-  font-size: 18px;
-  font-weight: 600;
+  font-size: 20px;
+  font-weight: 700;
   color: #1e293b;
-  margin: 0 0 20px 0;
+  margin: 0;
+  background: linear-gradient(135deg, #1e293b 0%, #475569 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
-/* Social Sales */
+.section-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f3f4f6;
+  color: #6b7280;
+  font-size: 20px;
+}
+
+.social-sales-section, .activity-section, .products-section {
+  background: var(--bg-white);
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border-light);
+}
+
 .social-list {
   display: flex;
   flex-direction: column;

@@ -155,13 +155,21 @@
                     <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
                   </svg>
                 </button>
-                <button class="action-btn pdf-btn" @click="downloadReceipt(scope.row)" title="Descargar PDF">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <button 
+                  class="action-btn pdf-btn" 
+                  @click="downloadReceipt(scope.row)" 
+                  :disabled="downloadingReceipt === scope.row.id"
+                  :title="downloadingReceipt === scope.row.id ? 'Generando PDF...' : 'Descargar PDF'"
+                >
+                  <svg v-if="downloadingReceipt !== scope.row.id" width="16" height="16" viewBox="0 0 24 24" fill="none">
                     <path d="M14 2H6C4.9 2 4 2.9 4 4V20C4 21.1 4.9 22 6 22H18C19.1 22 20 21.1 20 20V8L14 2Z" stroke="currentColor" stroke-width="2"/>
                     <path d="M14 2V8H20" stroke="currentColor" stroke-width="2"/>
                     <path d="M16 13H8" stroke="currentColor" stroke-width="2"/>
                     <path d="M16 17H8" stroke="currentColor" stroke-width="2"/>
                     <path d="M10 9H9H8" stroke="currentColor" stroke-width="2"/>
+                  </svg>
+                  <svg v-else class="loading-spinner" width="16" height="16" viewBox="0 0 24 24" fill="none">
+                    <path d="M12 2V6M12 18V22M4.93 4.93L7.76 7.76M16.24 16.24L19.07 19.07M2 12H6M18 12H22M4.93 19.07L7.76 16.24M16.24 7.76L19.07 4.93" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                   </svg>
                 </button>
               </div>
@@ -391,6 +399,7 @@ export default {
     const sales = ref([])
     const loading = ref(false)
     const navigating = ref(false)
+    const downloadingReceipt = ref(null)
     const dateRange = ref([])
     const statusFilter = ref('')
     const searchTerm = ref('')
@@ -530,7 +539,19 @@ export default {
 
     const downloadReceipt = async (sale) => {
       try {
+        // Prevenir múltiples clicks
+        downloadingReceipt.value = sale.id
+        
+        // Mostrar loading
+        toast.info('Generando comprobante...')
+        
         const response = await saleService.generateReceipt(sale.id)
+        
+        // Verificar que la respuesta sea válida
+        if (!response.data || response.data.byteLength === 0) {
+          throw new Error('El PDF generado está vacío')
+        }
+        
         const blob = new Blob([response.data], { type: 'application/pdf' })
         const url = window.URL.createObjectURL(blob)
         const link = document.createElement('a')
@@ -538,10 +559,24 @@ export default {
         link.download = `comprobante-${sale.sale_number}.pdf`
         link.click()
         window.URL.revokeObjectURL(url)
+        
         toast.success('Comprobante descargado correctamente')
       } catch (error) {
         console.error('Error al descargar comprobante:', error)
-        toast.error('Error al descargar comprobante')
+        
+        let errorMessage = 'Error al descargar comprobante'
+        if (error.response?.status === 404) {
+          errorMessage = 'Venta no encontrada'
+        } else if (error.response?.status === 500) {
+          errorMessage = 'Error del servidor al generar PDF'
+        } else if (error.message) {
+          errorMessage = error.message
+        }
+        
+        toast.error(errorMessage)
+      } finally {
+        // Reset loading state
+        downloadingReceipt.value = null
       }
     }
 
@@ -780,6 +815,7 @@ export default {
       sales,
       loading,
       navigating,
+      downloadingReceipt,
       dateRange,
       statusFilter,
       searchTerm,
@@ -849,17 +885,21 @@ export default {
 .sales-page {
   min-height: 100%;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background-color: #f8fafc;
+  background-color: var(--bg-cream-primary);
   padding: 24px;
 }
 
 /* Modern Header */
 .page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
+  background: var(--bg-white);
+  border-radius: 16px;
+  padding: 24px 32px;
   margin-bottom: 32px;
-  padding: 0 4px;
+  box-shadow: var(--header-shadow);
+  border: 1px solid var(--border-light);
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
 }
 
 .header-content h1.page-title {
@@ -1889,6 +1929,20 @@ export default {
   .product-stock {
     margin: 0;
     text-align: left;
+  }
+}
+
+/* Loading Spinner Animation */
+.loading-spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
   }
 }
 </style>

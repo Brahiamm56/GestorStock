@@ -9,6 +9,7 @@ import 'vue3-toastify/dist/index.css'
 import App from './App.vue'
 import router from './router'
 import './style.css'
+import './styles/variables.css'
 
 const app = createApp(App)
 
