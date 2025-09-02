@@ -19,7 +19,6 @@
             @image-removed="handleImageRemoved"
           />
         </div>
-        
         <div class="profile-info-header">
           <h1 class="profile-name">{{ form.name || 'Usuario' }}</h1>
           <div class="profile-role">
@@ -44,7 +43,6 @@
           <i class="fas fa-user"></i>
           Información Personal
         </h2>
-        
         <div class="info-grid">
           <ProfileInfoCard
             class="email"
@@ -55,7 +53,15 @@
             :editable="true"
             @edit="editField('email')"
           />
-          
+          <ProfileInfoCard
+            class="phone"
+            title="Teléfono"
+            subtitle="Número de teléfono"
+            :value="form.phone"
+            icon="fas fa-phone"
+            :editable="true"
+            @edit="editField('phone')"
+          />
           <ProfileInfoCard
             class="role"
             title="Rol"
@@ -64,7 +70,6 @@
             icon="fas fa-user-shield"
             :editable="false"
           />
-          
           <ProfileInfoCard
             class="status"
             title="Estado"
@@ -73,7 +78,6 @@
             icon="fas fa-check-circle"
             :editable="false"
           />
-          
           <ProfileInfoCard
             class="login"
             title="Último Login"
@@ -92,7 +96,6 @@
             <i class="fas fa-edit"></i>
             Editar {{ getFieldLabel(editingField) }}
           </h3>
-          
           <form @submit.prevent="handleFieldUpdate" class="edit-form">
             <div class="form-group">
               <label :for="editingField" class="form-label">
@@ -107,7 +110,6 @@
                 required
               />
             </div>
-            
             <div class="form-actions">
               <ModernButton
                 variant="secondary"
@@ -116,7 +118,6 @@
               >
                 Cancelar
               </ModernButton>
-              
               <ModernButton
                 variant="primary"
                 size="medium"
@@ -143,7 +144,6 @@
           >
             Actualizar Perfil
           </ModernButton>
-          
           <ModernButton
             variant="ghost"
             size="medium"
@@ -190,7 +190,7 @@ export default {
     const updateSuccess = ref(false)
     const showSuccessToast = ref(false)
     const editingField = ref(null)
-    
+
     const form = reactive({
       name: '',
       email: '',
@@ -199,22 +199,18 @@ export default {
       gender: '',
       phone: ''
     })
-    
+
     const editForm = reactive({
       name: '',
-      email: ''
+      email: '',
+      phone: ''
     })
-    
-    const editForm = reactive({
-      name: '',
-      email: ''
-    })
-    
+
     // Computed properties
     const userProfileImage = computed(() => {
       return authStore.user?.profile_image || null
     })
-    
+
     // Methods
     const loadProfile = () => {
       if (authStore.user) {
@@ -226,7 +222,7 @@ export default {
         form.phone = authStore.user.phone || ''
       }
     }
-    
+
     const handleSubmit = async () => {
       try {
         loading.value = true
@@ -234,12 +230,10 @@ export default {
         if (success) {
           updateSuccess.value = true
           showSuccessToast.value = true
-          
           setTimeout(() => {
             updateSuccess.value = false
             showSuccessToast.value = false
           }, 3000)
-          
           toast.success('Perfil actualizado correctamente')
         }
       } catch (error) {
@@ -248,20 +242,17 @@ export default {
         loading.value = false
       }
     }
-    
+
     const handleImageSelected = async (imageData) => {
       if (imageData.error) {
         toast.error(imageData.error)
         return
       }
-      
       try {
         uploadingImage.value = true
-        
         const success = await authStore.updateProfileImage(imageData.file)
         if (success) {
-          // La imagen se actualizó correctamente en el store
-          // No necesitamos hacer nada más aquí
+          // Imagen actualizada correctamente
         }
       } catch (error) {
         console.error('Error al subir imagen:', error)
@@ -270,26 +261,27 @@ export default {
         uploadingImage.value = false
       }
     }
-    
+
     const handleImageRemoved = () => {
       toast.info('Imagen de perfil removida')
     }
-    
+
     const editField = (field) => {
       editingField.value = field
       editForm[field] = form[field]
     }
-    
+
     const cancelEdit = () => {
       editingField.value = null
       editForm.name = ''
       editForm.email = ''
+      editForm.phone = ''
     }
-    
+
     const handleFieldUpdate = async () => {
       try {
         updatingField.value = true
-        
+
         // Validar el campo
         if (editingField.value === 'email') {
           const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -298,18 +290,25 @@ export default {
             return
           }
         }
-        
+        if (editingField.value === 'phone') {
+          const phoneRegex = /^[0-9+\s()-]{6,20}$/
+          if (!phoneRegex.test(editForm.phone)) {
+            toast.error('Teléfono inválido')
+            return
+          }
+        }
+
         // Actualizar el campo
         form[editingField.value] = editForm[editingField.value]
-        
+
         // Aquí se implementaría la actualización en el backend
-        await new Promise(resolve => setTimeout(resolve, 1000))
-        
+        await authStore.updateProfile({ [editingField.value]: editForm[editingField.value] })
+
         toast.success('Campo actualizado correctamente')
         editingField.value = null
         editForm.name = ''
         editForm.email = ''
-        
+        editForm.phone = ''
       } catch (error) {
         console.error('Error al actualizar campo:', error)
         toast.error('Error al actualizar campo')
@@ -317,54 +316,57 @@ export default {
         updatingField.value = false
       }
     }
-    
+
     const refreshProfile = () => {
       loadProfile()
       toast.info('Datos del perfil actualizados')
     }
-    
+
     const getRoleText = (role) => {
       return role === 'admin' ? 'Administrador' : 'Usuario'
     }
-    
+
     const formatDate = (date) => {
       if (!date) return 'Nunca'
       return format(new Date(date), 'dd/MM/yyyy HH:mm')
     }
-    
+
     const getStatusClass = () => {
       return authStore.user?.is_active ? 'status-active' : 'status-inactive'
     }
-    
+
     const getFieldLabel = (field) => {
       const labels = {
         name: 'Nombre',
-        email: 'Email'
+        email: 'Email',
+        phone: 'Teléfono'
       }
       return labels[field] || field
     }
-    
+
     const getFieldType = (field) => {
       const types = {
         name: 'text',
-        email: 'email'
+        email: 'email',
+        phone: 'tel'
       }
       return types[field] || 'text'
     }
-    
+
     const getFieldPlaceholder = (field) => {
       const placeholders = {
         name: 'Tu nombre completo',
-        email: 'tu@email.com'
+        email: 'tu@email.com',
+        phone: 'Ej: 362 1234567'
       }
       return placeholders[field] || ''
     }
-    
+
     // Lifecycle
     onMounted(() => {
       loadProfile()
     })
-    
+
     return {
       authStore,
       form,
