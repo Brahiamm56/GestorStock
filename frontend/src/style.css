@@ -2,21 +2,24 @@
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap');
 
 :root {
-  --primary-color: #7c5a43;
-  --secondary-color: #f8cdd2;
-  --accent-color: #fbeee6;
   --success-color: #67c23a;
   --warning-color: #e6a23c;
   --danger-color: #f56c6c;
   --info-color: #909399;
-  --text-color: #222;
-  --text-color-regular: #606266;
-  --text-color-light: #fff;
-  --text-color-secondary: #909399;
-  --border-color: #e5e5e5;
-  --border-color-light: #e4e7ed;
-  --background-color: #fbeee6;
-  --card-background: #fff;
+  --primary-color: #ffeadd;         /* Fondo principal y header */
+  --secondary-color: #fff;          /* Tarjetas, sidebar, modales */
+  --accent-color: #222;             /* Texto principal y acentos */
+  --text-color: #222;               /* Texto general */
+  --text-light: #fff;               /* Texto sobre fondos oscuros */
+  --border-color: #f5d6c6;          /* Bordes suaves */
+  --button-bg: #ffeadd;             /* Botones principales */
+  --button-hover: #f5d6c6;          /* Hover de botones */
+  --input-bg: #fff;                 /* Inputs */
+  --input-border: #f5d6c6;          /* Borde de inputs */
+  --sidebar-bg: #fff;               /* Fondo sidebar */
+  --sidebar-text: #222;             /* Texto sidebar */
+  --header-bg: #ffeadd;             /* Fondo header */
+  --header-text: #222;              /* Texto header */
 }
 
 * {

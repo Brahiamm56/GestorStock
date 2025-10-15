@@ -899,7 +899,7 @@ export default {
   border: 1px solid var(--border-light);
   position: sticky;
   top: 0;
-  z-index: var(--z-sticky);
+  z-index: 100;
 }
 
 .header-content h1.page-title {

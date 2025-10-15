@@ -1,16 +1,16 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { initializeApp } from 'firebase/app'
-import { 
-  getAuth, 
-  signInWithEmailAndPassword, 
-  signOut, 
-  onAuthStateChanged 
+import {
+  getAuth,
+  signInWithEmailAndPassword,
+  signOut,
+  onAuthStateChanged
 } from 'firebase/auth'
 import { toast } from 'vue3-toastify'
 import api from '@/services/api'
 
-// Configuración de Firebase (debes reemplazar con tu configuración)
+// Configuración de Firebase (reemplazar si corresponde)
 const firebaseConfig = {
   apiKey: "AIzaSyAvDYFche6vtuJ43d7_LGdXdKnRBkyPG-M",
   authDomain: "gestor-stock-192ae.firebaseapp.com",
@@ -25,51 +25,163 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig)
 const auth = getAuth(app)
 
+const STORAGE_KEY = 'gestorstock_user'
+
 export const useAuthStore = defineStore('auth', () => {
   const user = ref(null)
   const loading = ref(false)
   const firebaseUser = ref(null)
+  const initialized = ref(false)
 
   const isAuthenticated = computed(() => !!user.value)
   const isAdmin = computed(() => user.value?.role === 'admin')
 
-  // Escuchar cambios en el estado de autenticación de Firebase
-  onAuthStateChanged(auth, async (firebaseUser) => {
-    if (firebaseUser) {
-      firebaseUser.value = firebaseUser
-      await verifyToken()
-    } else {
-      firebaseUser.value = null
-      user.value = null
-    }
-  })
-
-  // Verificar token con el backend
-  const verifyToken = async () => {
+  // Persistencia simple en localStorage
+  const saveToStorage = () => {
     try {
-      const idToken = await auth.currentUser?.getIdToken()
-      if (!idToken) return
-
-      const response = await api.post('/auth/verify', { idToken })
-      user.value = response.data.user
-    } catch (error) {
-      console.error('Error al verificar token:', error)
-      await signOut()
+      if (user.value) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(user.value))
+      } else {
+        localStorage.removeItem(STORAGE_KEY)
+      }
+    } catch (e) {
+      console.warn('No se pudo guardar user en localStorage', e)
     }
   }
+
+  const loadFromStorage = () => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY)
+      if (raw) {
+        user.value = JSON.parse(raw)
+      }
+    } catch (e) {
+      console.warn('No se pudo cargar user desde localStorage', e)
+    }
+  }
+
+  // Helper: obtener token fresco con retries
+  const getFreshToken = async (force = true, retries = 1) => {
+    for (let attempt = 0; attempt <= retries; attempt++) {
+      try {
+        const token = await auth.currentUser?.getIdToken(force)
+        if (token) return token
+      } catch (err) {
+        // si el user desapareció o error, romper
+        if (!auth.currentUser) throw err
+        if (attempt < retries) await new Promise(r => setTimeout(r, 200))
+      }
+    }
+    throw new Error('No se obtuvo idToken')
+  }
+
+  // Verificar token con el backend (intenta refrescar cuando expire)
+  const verifyToken = async () => {
+    try {
+      // Si no hay usuario firebase conocido, intentar rehidratar y no forzar signOut aún
+      if (!auth.currentUser && !firebaseUser.value) {
+        // intentar rehidratar desde storage, pero igualmente marcar initialized más abajo
+      }
+
+      const idToken = await getFreshToken(true, 1) // force refresh + 1 retry
+      if (!idToken) {
+        initialized.value = true
+        return
+      }
+
+      // Enviar token en header Authorization (backend acepta body o header)
+      const response = await api.post(
+        '/auth/verify',
+        {},
+        { headers: { Authorization: `Bearer ${idToken}` } }
+      )
+
+      user.value = response.data.user
+      saveToStorage()
+    } catch (error) {
+      // manejar casos conocidos sin forzar signOut inmediato (mejor UX)
+      console.error('Error al verificar token:', error)
+
+      const resStatus = error?.response?.status
+      const resData = error?.response?.data
+
+      // Si backend informa token expirado, intentar refresh once more
+      if (resStatus === 401 && resData?.code === 'TOKEN_EXPIRED') {
+        try {
+          const idToken2 = await getFreshToken(true, 0) // un último intento
+          if (idToken2) {
+            const retryResp = await api.post(
+              '/auth/verify',
+              {},
+              { headers: { Authorization: `Bearer ${idToken2}` } }
+            )
+            user.value = retryResp.data.user
+            saveToStorage()
+            initialized.value = true
+            return
+          }
+        } catch (err2) {
+          console.warn('Reintento de token fresco falló', err2)
+        }
+      }
+
+      // Si no hay usuario firebase activo -> limpiar estado (usuario desconectado)
+      if (!auth.currentUser) {
+        user.value = null
+        saveToStorage()
+      } else {
+        // No limpiar inmediatamente para evitar logout visible; guardar null temporalmente
+        user.value = null
+        saveToStorage()
+      }
+
+      // Si el token claramente inválido, cerrar sesión en Firebase para limpiar estado
+      if (resStatus === 401 && (!resData || resData.code === 'TOKEN_EXPIRED')) {
+        try { await signOut(auth) } catch (_) { /* ignore */ }
+      }
+    } finally {
+      initialized.value = true
+    }
+  }
+
+  // Escuchar cambios en el estado de autenticación de Firebase
+  onAuthStateChanged(auth, async (fbUser) => {
+    try {
+      if (fbUser) {
+        // evitar shadowing: usar firebaseUser ref
+        firebaseUser.value = fbUser
+        // Cargar user desde storage de forma inmediata para UX
+        loadFromStorage()
+        // Verificar token con backend (forzar token fresco)
+        await verifyToken()
+      } else {
+        firebaseUser.value = null
+        user.value = null
+        saveToStorage()
+        initialized.value = true
+      }
+    } catch (err) {
+      console.error('Error en onAuthStateChanged:', err)
+      // asegurar que no queda estado inconsistente
+      firebaseUser.value = null
+      user.value = null
+      saveToStorage()
+      initialized.value = true
+    }
+  })
 
   // Iniciar sesión
   const login = async (email, password) => {
     loading.value = true
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password)
+      await signInWithEmailAndPassword(auth, email, password)
       await verifyToken()
       toast.success('Inicio de sesión exitoso')
       return true
     } catch (error) {
       console.error('Error en login:', error)
       let message = 'Error al iniciar sesión'
-      
+
       switch (error.code) {
         case 'auth/user-not-found':
           message = 'Usuario no encontrado'
@@ -84,7 +196,7 @@ export const useAuthStore = defineStore('auth', () => {
           message = 'Demasiados intentos. Intenta más tarde'
           break
       }
-      
+
       toast.error(message)
       return false
     } finally {
@@ -96,19 +208,26 @@ export const useAuthStore = defineStore('auth', () => {
   const logout = async () => {
     try {
       await signOut(auth)
-      user.value = null
-      toast.success('Sesión cerrada correctamente')
     } catch (error) {
-      console.error('Error al cerrar sesión:', error)
-      toast.error('Error al cerrar sesión')
+      console.error('Error al cerrar sesión (firebase):', error)
+    } finally {
+      user.value = null
+      firebaseUser.value = null
+      saveToStorage()
+      toast.success('Sesión cerrada correctamente')
     }
   }
 
   // Actualizar perfil
   const updateProfile = async (profileData) => {
     try {
-      const response = await api.put('/auth/profile', profileData)
+      // asegurarse token fresco para peticiones protegidas
+      const idToken = await getFreshToken(true, 1)
+      const response = await api.put('/auth/profile', profileData, {
+        headers: { Authorization: `Bearer ${idToken}` }
+      })
       user.value = response.data.user
+      saveToStorage()
       toast.success('Perfil actualizado correctamente')
       return true
     } catch (error) {
@@ -118,19 +237,22 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  // Actualizar imagen de perfil
+  // Actualizar imagen de perfil (usa multipart/form-data)
   const updateProfileImage = async (imageFile) => {
     try {
       const formData = new FormData()
       formData.append('profile_image', imageFile)
-      
+
+      const idToken = await getFreshToken(true, 1)
       const response = await api.put('/auth/profile-image', formData, {
         headers: {
-          'Content-Type': 'multipart/form-data'
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${idToken}`
         }
       })
-      
+
       user.value = response.data.user
+      saveToStorage()
       toast.success('Imagen de perfil actualizada correctamente')
       return true
     } catch (error) {
@@ -140,14 +262,20 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  // Inicialización: intentar rehidratar antes de que onAuthStateChanged corra
+  loadFromStorage()
+
   return {
     user,
     loading,
+    firebaseUser,
+    initialized,
     isAuthenticated,
     isAdmin,
     login,
     logout,
     updateProfile,
-    updateProfileImage
+    updateProfileImage,
+    verifyToken
   }
 })

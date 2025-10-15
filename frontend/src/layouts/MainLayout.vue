@@ -136,11 +136,10 @@ const getUserInitials = () => {
 
 /* Header Styles */
 .main-header {
-  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
-  border-bottom: 3px solid #1f2937;
+  background: var(--header-bg);
+  color: var(--header-text);
   padding: 0;
   height: 80px;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
   z-index: 100;
 }
 
@@ -158,7 +157,7 @@ const getUserInitials = () => {
 }
 
 .app-title {
-  color: white;
+  color: var(--accent-color);
   font-family: 'Inter', sans-serif;
   font-size: 28px;
   font-weight: 700;
@@ -167,7 +166,7 @@ const getUserInitials = () => {
 }
 
 .header-subtitle {
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--accent-color);
   font-size: 14px;
   font-weight: 500;
   margin-top: 2px;
@@ -196,7 +195,7 @@ const getUserInitials = () => {
 }
 
 .user-initials {
-  color: white;
+  color: var(--accent-color);
   font-weight: 700;
   font-size: 18px;
   font-family: 'Inter', sans-serif;
@@ -209,14 +208,14 @@ const getUserInitials = () => {
 }
 
 .user-name {
-  color: white;
+  color: var(--accent-color);
   font-weight: 600;
   font-size: 16px;
   font-family: 'Inter', sans-serif;
 }
 
 .user-role {
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--accent-color);
   font-size: 14px;
   font-weight: 500;
 }
@@ -227,7 +226,7 @@ const getUserInitials = () => {
   gap: 8px;
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
-  color: white;
+  color: var(--accent-color);
   padding: 10px 16px;
   border-radius: 8px;
   cursor: pointer;
@@ -257,11 +256,10 @@ const getUserInitials = () => {
 /* Sidebar Styles */
 .sidebar {
   width: 280px;
-  background: linear-gradient(180deg, #1e293b 0%, #4c1d95 100%);
-  border-right: 3px solid #1f2937;
+  background: var(--sidebar-bg);
+  color: var(--sidebar-text);
   display: flex;
   flex-direction: column;
-  box-shadow: 8px 0 25px rgba(0, 0, 0, 0.15);
 }
 
 .sidebar-header {
@@ -278,11 +276,11 @@ const getUserInitials = () => {
 .logo-icon {
   width: 32px;
   height: 32px;
-  color: white;
+  color: var(--accent-color);
 }
 
 .logo-text {
-  color: white;
+  color: var(--accent-color);
   font-family: 'Inter', sans-serif;
   font-size: 20px;
   font-weight: 700;
@@ -300,7 +298,7 @@ const getUserInitials = () => {
   padding: 16px 24px;
   margin: 0 16px 8px;
   border-radius: 12px;
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--accent-color);
   text-decoration: none;
   font-family: 'Inter', sans-serif;
   font-size: 16px;
@@ -311,7 +309,7 @@ const getUserInitials = () => {
 
 .nav-item:hover {
   background: rgba(255, 255, 255, 0.1);
-  color: white;
+  color: var(--accent-color);
   transform: translateX(4px);
 }
 
@@ -354,7 +352,6 @@ const getUserInitials = () => {
 .main-content {
   flex: 1;
   background: var(--bg-cream-primary);
-  border: 3px solid #1f2937;
   border-left: none;
   position: relative;
 }
