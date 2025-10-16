@@ -237,21 +237,34 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  // Actualizar imagen de perfil (usa multipart/form-data)
+  // Actualizar imagen de perfil (2 pasos: subir a /upload/image y guardar URL en /auth/profile)
   const updateProfileImage = async (imageFile) => {
     try {
       const formData = new FormData()
-      formData.append('profile_image', imageFile)
+      // El backend de uploads espera el campo 'image'
+      formData.append('image', imageFile)
 
       const idToken = await getFreshToken(true, 1)
-      const response = await api.put('/auth/profile-image', formData, {
+
+      // 1) Subir imagen
+      const uploadResp = await api.post('/upload/image', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           Authorization: `Bearer ${idToken}`
         }
       })
 
-      user.value = response.data.user
+      const imageUrl = uploadResp?.data?.data?.url
+      if (!imageUrl) throw new Error('Respuesta de subida sin URL de imagen')
+
+      // 2) Guardar URL en el perfil
+      const saveResp = await api.put(
+        '/auth/profile',
+        { profile_image: imageUrl },
+        { headers: { Authorization: `Bearer ${idToken}` } }
+      )
+
+      user.value = saveResp.data.user
       saveToStorage()
       toast.success('Imagen de perfil actualizada correctamente')
       return true

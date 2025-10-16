@@ -262,8 +262,18 @@ export default {
       }
     }
 
-    const handleImageRemoved = () => {
-      toast.info('Imagen de perfil removida')
+    const handleImageRemoved = async () => {
+      try {
+        uploadingImage.value = true
+        const ok = await authStore.updateProfile({ profile_image: null })
+        if (ok) {
+          toast.info('Imagen de perfil removida')
+        } else {
+          toast.error('No se pudo eliminar la imagen')
+        }
+      } finally {
+        uploadingImage.value = false
+      }
     }
 
     const editField = (field) => {

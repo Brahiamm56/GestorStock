@@ -36,6 +36,10 @@ const User = sequelize.define('User', {
   },
   last_login: {
     type: DataTypes.DATE
+  },
+  profile_image: {
+    type: DataTypes.TEXT,
+    allowNull: true
   }
 }, {
   tableName: 'users',
