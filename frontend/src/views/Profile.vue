@@ -1,11 +1,5 @@
 <template>
   <div class="profile-page">
-    <!-- Breadcrumbs -->
-    <nav class="breadcrumbs">
-      <span class="breadcrumb-item">Dashboard</span>
-      <i class="fas fa-chevron-right breadcrumb-separator"></i>
-      <span class="breadcrumb-item active">Mi Perfil</span>
-    </nav>
 
     <!-- Header del perfil -->
     <div class="profile-header">
@@ -440,21 +434,18 @@ export default {
 
 /* Header del perfil */
 .profile-header {
-  background: var(--bg-white);
-  border-bottom: 1px solid var(--border-light);
-  padding: 40px 32px;
+  padding: 0 32px 0px;
   margin-bottom: 32px;
-  box-shadow: var(--header-shadow);
-  position: sticky;
-  top: 0;
-  z-index: var(--z-sticky);
 }
 
 .profile-header-content {
-  max-width: 1200px;
-  margin: 0 auto;
+  box-shadow: var(--header-shadow);
+  border-radius: 16px;
+  background: var(--bg-white);
+  border-bottom: 1px solid var(--border-light);
+  padding: 40px 32px;
   display: flex;
-  align-items: center;
+  align-items: top;
   gap: 32px;
 }
 
@@ -463,14 +454,17 @@ export default {
 }
 
 .profile-info-header {
-  flex: 1;
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
 }
 
 .profile-name {
   font-size: 32px;
   font-weight: 700;
   color: #1e293b;
-  margin: 0 0 12px 0;
   line-height: 1.2;
   letter-spacing: -0.025em;
 }
@@ -478,11 +472,9 @@ export default {
 .profile-role {
   display: flex;
   align-items: center;
-  gap: 8px;
   font-size: 18px;
   color: #64748b;
   font-weight: 500;
-  margin-bottom: 8px;
 }
 
 .profile-role i {
@@ -490,14 +482,9 @@ export default {
   font-size: 16px;
 }
 
-.profile-status {
-  margin-top: 16px;
-}
-
 .status-badge {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
   padding: 6px 12px;
   border-radius: 20px;
   font-size: 14px;
