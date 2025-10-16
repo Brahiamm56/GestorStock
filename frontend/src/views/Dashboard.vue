@@ -561,8 +561,6 @@ export default {
   border-radius: 16px;
   box-shadow: var(--header-shadow);
   border: 1px solid var(--border-light);
-  position: sticky;
-  top: 0;
   z-index: var(--z-sticky);
   overflow: hidden;
 }
