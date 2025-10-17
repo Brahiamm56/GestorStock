@@ -12,7 +12,8 @@ export const API_CONFIG = {
     PRODUCTS: '/api/products',
     SALES: '/api/sales',
     USERS: '/api/users',
-    UPLOAD: '/api/upload'
+    UPLOAD: '/api/upload',
+    DASHBOARD: '/api/dashboard'
   }
 }
 

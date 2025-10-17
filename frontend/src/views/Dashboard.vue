@@ -120,36 +120,6 @@
 
     <!-- Enhanced Bottom Section -->
     <div class="bottom-section">
-      <!-- Enhanced Sales by Social Source -->
-      <div class="social-sales-section">
-        <div class="section-card">
-          <div class="section-header">
-            <h3 class="section-title">Ventas por Red Social</h3>
-            <div class="section-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
-              </svg>
-            </div>
-          </div>
-          <div class="social-list">
-            <div v-for="source in socialSources" :key="source.name" class="social-item">
-              <div class="social-icon" :class="source.platform">
-                <i :class="source.icon"></i>
-              </div>
-              <div class="social-info">
-                <div class="social-name">{{ source.name }}</div>
-                <div class="social-stats">{{ source.sales }} Venta</div>
-              </div>
-              <div class="social-revenue">
-                <div class="revenue-amount">${{ formatNumber(source.revenue) }}</div>
-                <div class="revenue-growth" :class="{ positive: source.growth >= 0 }">
-                  {{ source.growth >= 0 ? '+' : '' }}{{ source.growth }}%
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
 
       <!-- Enhanced Product Trading Activity -->
       <div class="activity-section">
@@ -212,9 +182,9 @@
 </template>
 
 <script>
-import { ref, onMounted, reactive, nextTick, computed } from 'vue'
+import { ref, onMounted, reactive, nextTick, computed, watch } from 'vue'
 import { useAuthStore } from '@/stores/auth'
-import axios from 'axios'
+import api from '@/services/api'
 import BarChart from '@/components/BarChart.vue'
 import DonutChart from '@/components/DonutChart.vue'
 
@@ -233,126 +203,24 @@ export default {
     const loading = ref(false)
     
     const overview = reactive({
-      totalRevenue: 45231.89,
-      dateRange: 'Últimos 30 días',
-      growth: 20.1,
-      netProfit: 12560,
-      netRevenue: 32671
+      totalRevenue: 0,
+      dateRange: 'Cargando...',
+      growth: 0,
+      netProfit: 0,
+      netRevenue: 0
     })
     
-    const monthlyData = ref([
-      { month: 'Ene', revenue: 12000 },
-      { month: 'Feb', revenue: 19000 },
-      { month: 'Mar', revenue: 15000 },
-      { month: 'Abr', revenue: 25000 },
-      { month: 'May', revenue: 22000 },
-      { month: 'Jun', revenue: 30000 },
-      { month: 'Jul', revenue: 28000 },
-      { month: 'Ago', revenue: 35000 },
-      { month: 'Sep', revenue: 32000 },
-      { month: 'Oct', revenue: 40000 },
-      { month: 'Nov', revenue: 38000 },
-      { month: 'Dic', revenue: 45000 }
-    ])
+    const monthlyData = ref([])
     
     const orderStatsData = reactive({
-      completed: { count: 1234, percentage: 70 },
-      processing: { count: 234, percentage: 20 },
-      cancelled: { count: 123, percentage: 10 }
+      completed: { count: 0, percentage: 0 },
+      processing: { count: 0, percentage: 0 },
+      cancelled: { count: 0, percentage: 0 }
     })
     
-    const socialSources = ref([
-      {
-        name: 'Facebook',
-        platform: 'facebook',
-        icon: 'fab fa-facebook-f',
-        sales: 234,
-        revenue: 12500,
-        growth: 12.5
-      },
-      {
-        name: 'Instagram',
-        platform: 'instagram', 
-        icon: 'fab fa-instagram',
-        sales: 156,
-        revenue: 8900,
-        growth: 8.2
-      },
-      {
-        name: 'Twitter',
-        platform: 'twitter',
-        icon: 'fab fa-twitter',
-        sales: 89,
-        revenue: 4500,
-        growth: -2.1
-      },
-      {
-        name: 'LinkedIn',
-        platform: 'linkedin',
-        icon: 'fab fa-linkedin-in',
-        sales: 67,
-        revenue: 3200,
-        growth: 5.8
-      }
-    ])
+    const recentActivities = ref([])
     
-    const recentActivities = ref([
-      {
-        id: 1,
-        user: 'John Doe',
-        avatar: 'https://via.placeholder.com/40',
-        description: 'Purchased iPhone 14 Pro',
-        status: 'completed',
-        statusText: 'Completed',
-        time: '2:30 PM',
-        date: 'Today'
-      },
-      {
-        id: 2,
-        user: 'Jane Smith',
-        avatar: 'https://via.placeholder.com/40',
-        description: 'Added MacBook Air to cart',
-        status: 'processing',
-        statusText: 'Processing',
-        time: '1:15 PM',
-        date: 'Today'
-      },
-      {
-        id: 3,
-        user: 'Mike Johnson',
-        avatar: 'https://via.placeholder.com/40',
-        description: 'Cancelled AirPods order',
-        status: 'cancelled',
-        statusText: 'Cancelled',
-        time: '11:45 AM',
-        date: 'Today'
-      }
-    ])
-    
-    const bestProducts = ref([
-      {
-        id: 1,
-        name: 'iPhone 14 Pro',
-        image: 'https://via.placeholder.com/150',
-        price: 999,
-        originalPrice: 1099,
-        badge: 'Best Seller'
-      },
-      {
-        id: 2,
-        name: 'MacBook Air M2',
-        image: 'https://via.placeholder.com/150',
-        price: 1199,
-        badge: 'New'
-      },
-      {
-        id: 3,
-        name: 'AirPods Pro',
-        image: 'https://via.placeholder.com/150',
-        price: 249,
-        originalPrice: 279
-      }
-    ])
+    const bestProducts = ref([])
     
     // Methods
     const formatNumber = (num) => {
@@ -391,83 +259,178 @@ export default {
     const fetchDashboardData = async () => {
       loading.value = true
       try {
-        const token = authStore.token
-        const headers = { Authorization: `Bearer ${token}` }
+        console.log('🔄 Cargando datos del dashboard...')
+        console.log('🔐 Estado de autenticación:', {
+          isAuthenticated: authStore.isAuthenticated,
+          user: authStore.user,
+          firebaseUser: authStore.firebaseUser
+        })
+        
+        // Verificar autenticación antes de hacer llamadas
+        if (!authStore.isAuthenticated || !authStore.firebaseUser) {
+          console.log('❌ Usuario no autenticado, redirigiendo...')
+          throw new Error('Usuario no autenticado')
+        }
+        
+        // Verificar que el token esté disponible
+        try {
+          const token = await authStore.firebaseUser.getIdToken()
+          console.log('🔑 Token obtenido:', token ? 'Sí' : 'No')
+        } catch (tokenError) {
+          console.log('❌ Error al obtener token:', tokenError)
+          throw new Error('No se pudo obtener el token de autenticación')
+        }
         
         // Fetch overview data
-        const overviewRes = await axios.get(`/api/dashboard/overview?period=${selectedPeriod.value}`, { headers })
+        console.log('📊 Obteniendo datos de overview...')
+        const overviewRes = await api.get(`/dashboard/overview?period=${selectedPeriod.value}`)
+        console.log('📊 Respuesta overview:', overviewRes.data)
         if (overviewRes.data.success) {
           Object.assign(overview, overviewRes.data.overview)
+          console.log('✅ Overview cargado:', overviewRes.data.overview)
+        } else {
+          console.log('❌ Overview falló:', overviewRes.data)
         }
         
         // Fetch monthly sales
-        const monthlyRes = await axios.get('/api/dashboard/monthly-sales', { headers })
+        console.log('📈 Obteniendo datos mensuales...')
+        const monthlyRes = await api.get('/dashboard/monthly-sales')
+        console.log('📈 Respuesta mensual:', monthlyRes.data)
         if (monthlyRes.data.success) {
           monthlyData.value = monthlyRes.data.monthlyData
+          console.log('✅ Datos mensuales cargados:', monthlyRes.data.monthlyData.length, 'meses')
+          console.log('📊 Datos mensuales:', monthlyRes.data.monthlyData)
+          
+          // Si no hay datos, crear datos de ejemplo para mostrar el gráfico
+          if (monthlyRes.data.monthlyData.length === 0) {
+            console.log('⚠️ No hay datos mensuales, creando datos de ejemplo')
+            const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
+            monthlyData.value = monthNames.map(month => ({
+              month,
+              revenue: 0
+            }))
+          }
+        } else {
+          console.log('❌ Datos mensuales fallaron:', monthlyRes.data)
+          // Crear datos vacíos para evitar gráfico roto
+          const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
+          monthlyData.value = monthNames.map(month => ({
+            month,
+            revenue: 0
+          }))
         }
         
         // Fetch order stats
-        const orderRes = await axios.get('/api/dashboard/order-stats', { headers })
+        console.log('📋 Obteniendo estadísticas de pedidos...')
+        const orderRes = await api.get('/dashboard/order-stats')
         if (orderRes.data.success) {
           Object.assign(orderStatsData, orderRes.data.orderStats)
+          console.log('✅ Estadísticas de pedidos cargadas:', orderRes.data.orderStats)
         }
         
-        // Fetch social sources
-        const socialRes = await axios.get('/api/dashboard/social-sources', { headers })
-        if (socialRes.data.success) {
-          socialSources.value = socialRes.data.socialSources
-        }
+        // Social sources section removed as requested
         
         // Fetch activities
-        const activitiesRes = await axios.get('/api/dashboard/activities', { headers })
+        console.log('⚡ Obteniendo actividades recientes...')
+        const activitiesRes = await api.get('/dashboard/activities')
         if (activitiesRes.data.success) {
           recentActivities.value = activitiesRes.data.activities
+          console.log('✅ Actividades cargadas:', activitiesRes.data.activities.length, 'actividades')
         }
         
         // Fetch best products
-        const productsRes = await axios.get('/api/dashboard/best-products', { headers })
+        console.log('🏆 Obteniendo productos más vendidos...')
+        const productsRes = await api.get('/dashboard/best-products')
         if (productsRes.data.success) {
           bestProducts.value = productsRes.data.bestProducts
+          console.log('✅ Productos más vendidos cargados:', productsRes.data.bestProducts.length, 'productos')
         }
+        
+        console.log('🎉 Dashboard cargado completamente con datos reales')
         
         // Redraw charts
         await nextTick()
-        // drawBarChart() // This function is replaced by BarChart component
-        // drawDonutChart() // This function is replaced by DonutChart component
         
-      } catch (error) {
-        console.error('Error fetching dashboard data:', error)
-      } finally {
-        loading.value = false
-      }
+        } catch (error) {
+          console.error('❌ Error al cargar datos del dashboard:', error)
+          console.error('❌ Detalles del error:', {
+            message: error.message,
+            status: error.response?.status,
+            data: error.response?.data
+          })
+          
+          // Manejo específico de errores de autenticación
+          if (error.message === 'Usuario no autenticado' || error.message === 'No se pudo obtener el token de autenticación') {
+            console.log('🔐 Usuario no autenticado, el router se encargará de la redirección')
+            // NO redirigir manualmente - dejar que el router maneje
+            return
+          }
+          
+          if (error.response?.status === 401) {
+            console.log('🔐 Token expirado o inválido, forzando logout...')
+            // Solo hacer logout, el router se encargará de la redirección
+            await authStore.logout()
+            return
+          }
+          
+          // NO volver a datos hardcodeados - mantener arrays vacíos
+          console.log('⚠️ Manteniendo datos vacíos debido a error')
+          
+          // Mostrar mensaje de error al usuario
+          if (error.response?.status === 403) {
+            console.log('🚫 Error de permisos - acceso denegado')
+          } else {
+            console.log('⚠️ Error de conexión o servidor')
+          }
+        } finally {
+          loading.value = false
+        }
     }
     
     // Computed properties
     const orderStatsChartData = computed(() => {
+      // Asegurar que siempre hay datos válidos para evitar errores en el gráfico
+      const completed = orderStatsData.completed?.count || 0
+      const processing = orderStatsData.processing?.count || 0
+      const cancelled = orderStatsData.cancelled?.count || 0
+      const completedPercentage = orderStatsData.completed?.percentage || 0
+      const processingPercentage = orderStatsData.processing?.percentage || 0
+      const cancelledPercentage = orderStatsData.cancelled?.percentage || 0
+      
       return [
         {
           label: 'Completados',
-          value: orderStatsData.completed.count,
-          percentage: orderStatsData.completed.percentage,
+          value: completed,
+          percentage: completedPercentage,
           color: '#10B981'
         },
         {
           label: 'En Proceso',
-          value: orderStatsData.processing.count,
-          percentage: orderStatsData.processing.percentage,
+          value: processing,
+          percentage: processingPercentage,
           color: '#F59E0B'
         },
         {
           label: 'Cancelados',
-          value: orderStatsData.cancelled.count,
-          percentage: orderStatsData.cancelled.percentage,
+          value: cancelled,
+          percentage: cancelledPercentage,
           color: '#EF4444'
         }
       ]
     })
     
+    // Watchers para debugging
+    watch(monthlyData, (newData) => {
+      console.log('📊 monthlyData cambió:', newData)
+    }, { deep: true })
+    
+    watch(loading, (newLoading) => {
+      console.log('⏳ loading cambió:', newLoading)
+    })
+    
     // Lifecycle
     onMounted(async () => {
+      console.log('🚀 Dashboard montado, iniciando carga de datos...')
       await fetchDashboardData()
     })
     
@@ -478,7 +441,6 @@ export default {
       overview,
       monthlyData,
       orderStatsData,
-      socialSources,
       recentActivities,
       bestProducts,
       formatNumber,
@@ -967,7 +929,7 @@ export default {
 /* Bottom Section */
 .bottom-section {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: 1fr 1fr;
   gap: 24px;
 }
 
