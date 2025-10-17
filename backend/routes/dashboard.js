@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { Product, Sale, SaleItem, User, sequelize } = require('../models');
 const { Op } = require('sequelize');
-const { authenticateToken } = require('../middleware/auth');
+const { authenticateToken, optionalAuth } = require('../middleware/auth');
 
 // Obtener estadísticas del dashboard
 router.get('/stats', authenticateToken, async (req, res) => {
@@ -165,7 +165,7 @@ router.get('/recent-sales', authenticateToken, async (req, res) => {
 });
 
 // Obtener datos de overview del dashboard
-router.get('/overview', authenticateToken, async (req, res) => {
+router.get('/overview', optionalAuth, async (req, res) => {
   try {
     const { period = 'monthly' } = req.query;
     
@@ -246,8 +246,9 @@ router.get('/overview', authenticateToken, async (req, res) => {
 });
 
 // Obtener datos de ventas mensuales
-router.get('/monthly-sales', authenticateToken, async (req, res) => {
+router.get('/monthly-sales', optionalAuth, async (req, res) => {
   try {
+    console.log('📊 Obteniendo datos de ventas mensuales...');
     const now = new Date();
     const currentYear = now.getFullYear();
     const monthlyData = [];
@@ -257,6 +258,8 @@ router.get('/monthly-sales', authenticateToken, async (req, res) => {
       const monthDate = new Date(currentYear, now.getMonth() - i, 1);
       const nextMonth = new Date(currentYear, now.getMonth() - i + 1, 1);
       
+      console.log(`📅 Procesando mes ${i}: ${monthDate.toISOString()} - ${nextMonth.toISOString()}`);
+      
       const monthRevenue = await Sale.sum('total_amount', {
         where: {
           created_at: {
@@ -264,6 +267,8 @@ router.get('/monthly-sales', authenticateToken, async (req, res) => {
           }
         }
       }) || 0;
+      
+      console.log(`💰 Ingresos del mes ${i}: ${monthRevenue}`);
       
       const monthNames = [
         'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun',
@@ -275,6 +280,9 @@ router.get('/monthly-sales', authenticateToken, async (req, res) => {
         revenue: parseFloat(monthRevenue.toFixed(2))
       });
     }
+    
+    console.log('📊 Datos mensuales finales:', monthlyData);
+    console.log('📊 Total de meses con datos:', monthlyData.filter(m => m.revenue > 0).length);
     
     res.json({
       success: true,
@@ -291,77 +299,100 @@ router.get('/monthly-sales', authenticateToken, async (req, res) => {
   }
 });
 
-// Obtener estadísticas de pedidos
-router.get('/order-stats', authenticateToken, async (req, res) => {
+// Obtener estadísticas de métodos de pago
+router.get('/payment-methods', optionalAuth, async (req, res) => {
   try {
+    console.log('💳 Obteniendo estadísticas de métodos de pago...');
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     
-    // Obtener estadísticas de ventas por estado
-    const completedSales = await Sale.count({
+    // Obtener estadísticas de ventas por método de pago
+    const cashSales = await Sale.count({
       where: {
-        status: 'completed',
+        payment_method: 'cash',
         created_at: {
           [Op.gte]: startOfMonth
         }
       }
     });
     
-    const processingSales = await Sale.count({
+    const cardSales = await Sale.count({
       where: {
-        status: 'pending',
+        payment_method: 'card',
         created_at: {
           [Op.gte]: startOfMonth
         }
       }
     });
     
-    const cancelledSales = await Sale.count({
+    const transferSales = await Sale.count({
       where: {
-        status: 'cancelled',
+        payment_method: 'transfer',
         created_at: {
           [Op.gte]: startOfMonth
         }
       }
     });
     
-    const totalSales = completedSales + processingSales + cancelledSales;
+    const mercadopagoSales = await Sale.count({
+      where: {
+        payment_method: 'mercadopago',
+        created_at: {
+          [Op.gte]: startOfMonth
+        }
+      }
+    });
+    
+    const totalSales = cashSales + cardSales + transferSales + mercadopagoSales;
     
     // Calcular porcentajes
-    const completedPercentage = totalSales > 0 ? Math.round((completedSales / totalSales) * 100) : 0;
-    const processingPercentage = totalSales > 0 ? Math.round((processingSales / totalSales) * 100) : 0;
-    const cancelledPercentage = totalSales > 0 ? Math.round((cancelledSales / totalSales) * 100) : 0;
+    const cashPercentage = totalSales > 0 ? Math.round((cashSales / totalSales) * 100) : 0;
+    const cardPercentage = totalSales > 0 ? Math.round((cardSales / totalSales) * 100) : 0;
+    const transferPercentage = totalSales > 0 ? Math.round((transferSales / totalSales) * 100) : 0;
+    const mercadopagoPercentage = totalSales > 0 ? Math.round((mercadopagoSales / totalSales) * 100) : 0;
+    
+    console.log('💳 Métodos de pago:', {
+      cash: cashSales,
+      card: cardSales,
+      transfer: transferSales,
+      mercadopago: mercadopagoSales,
+      total: totalSales
+    });
     
     res.json({
       success: true,
-      orderStats: {
-        completed: {
-          count: completedSales,
-          percentage: completedPercentage
+      paymentMethods: {
+        cash: {
+          count: cashSales,
+          percentage: cashPercentage
         },
-        processing: {
-          count: processingSales,
-          percentage: processingPercentage
+        card: {
+          count: cardSales,
+          percentage: cardPercentage
         },
-        cancelled: {
-          count: cancelledSales,
-          percentage: cancelledPercentage
+        transfer: {
+          count: transferSales,
+          percentage: transferPercentage
+        },
+        mercadopago: {
+          count: mercadopagoSales,
+          percentage: mercadopagoPercentage
         }
       }
     });
     
   } catch (error) {
-    console.error('Error al obtener estadísticas de pedidos:', error);
+    console.error('Error al obtener estadísticas de métodos de pago:', error);
     res.status(500).json({
       success: false,
-      message: 'Error al obtener estadísticas de pedidos',
+      message: 'Error al obtener estadísticas de métodos de pago',
       error: error.message
     });
   }
 });
 
 // Obtener actividades recientes
-router.get('/activities', authenticateToken, async (req, res) => {
+router.get('/activities', optionalAuth, async (req, res) => {
   try {
     const recentSales = await Sale.findAll({
       order: [['created_at', 'DESC']],
@@ -421,7 +452,7 @@ router.get('/activities', authenticateToken, async (req, res) => {
 });
 
 // Obtener productos más vendidos (MEJORADO - datos reales)
-router.get('/best-products', authenticateToken, async (req, res) => {
+router.get('/best-products', optionalAuth, async (req, res) => {
   try {
     // Obtener productos más vendidos basado en cantidad total vendida
     const bestProducts = await SaleItem.findAll({
