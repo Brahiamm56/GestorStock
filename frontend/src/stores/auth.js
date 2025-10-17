@@ -219,23 +219,25 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   // Actualizar perfil
-  const updateProfile = async (profileData) => {
-    try {
-      // asegurarse token fresco para peticiones protegidas
-      const idToken = await getFreshToken(true, 1)
-      const response = await api.put('/auth/profile', profileData, {
-        headers: { Authorization: `Bearer ${idToken}` }
-      })
-      user.value = response.data.user
-      saveToStorage()
-      toast.success('Perfil actualizado correctamente')
-      return true
-    } catch (error) {
-      console.error('Error al actualizar perfil:', error)
-      toast.error('Error al actualizar perfil')
-      return false
-    }
-  }
+  const updateProfile = async (profileData, options = {}) => {
+     try {
+       // asegurarse token fresco para peticiones protegidas
+       const idToken = await getFreshToken(true, 1)
+       const response = await api.put('/auth/profile', profileData, {
+         headers: { Authorization: `Bearer ${idToken}` }
+       })
+       user.value = response.data.user
+       saveToStorage()
+       if (!options.silent) {
+        toast.success('Perfil actualizado correctamente')
+      }
+       return true
+     } catch (error) {
+       console.error('Error al actualizar perfil:', error)
+       toast.error('Error al actualizar perfil')
+       return false
+     }
+   }
 
   // Actualizar imagen de perfil (2 pasos: subir a /upload/image y guardar URL en /auth/profile)
   const updateProfileImage = async (imageFile) => {

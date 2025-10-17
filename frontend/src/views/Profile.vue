@@ -147,23 +147,7 @@
           >
             Actualizar Perfil
           </ModernButton>
-          <ModernButton
-            variant="ghost"
-            size="medium"
-            @click="refreshProfile"
-            icon="fas fa-refresh"
-          >
-            Actualizar Datos
-          </ModernButton>
         </div>
-      </div>
-    </div>
-
-    <!-- Toast de éxito -->
-    <div v-if="showSuccessToast" class="success-toast">
-      <div class="toast-content">
-        <i class="fas fa-check-circle"></i>
-        <span>Perfil actualizado correctamente</span>
       </div>
     </div>
   </div>
@@ -191,8 +175,8 @@ export default {
     const uploadingImage = ref(false)
     const updatingField = ref(false)
     const updateSuccess = ref(false)
-    const showSuccessToast = ref(false)
     const editingField = ref(null)
+    const uploadSuccess = ref(false)
 
     const form = reactive({
       name: '',
@@ -232,12 +216,9 @@ export default {
         const success = await authStore.updateProfile(form)
         if (success) {
           updateSuccess.value = true
-          showSuccessToast.value = true
           setTimeout(() => {
             updateSuccess.value = false
-            showSuccessToast.value = false
           }, 3000)
-          toast.success('Perfil actualizado correctamente')
         }
       } catch (error) {
         toast.error('Error al actualizar perfil')
@@ -253,9 +234,21 @@ export default {
       }
       try {
         uploadingImage.value = true
-        const success = await authStore.updateProfileImage(imageData.file)
-        if (success) {
-          // Imagen actualizada correctamente
+        const result = await authStore.updateProfileImage(imageData.file)
+        if (result && typeof result === 'object' && result.profile_image) {
+          form.photo = result.profile_image
+          uploadSuccess.value = true
+          setTimeout(() => {
+            uploadSuccess.value = false
+          }, 3000)
+        } else if (result === true) {
+          loadProfile()
+          uploadSuccess.value = true
+          setTimeout(() => {
+            uploadSuccess.value = false
+          }, 3000)
+        } else {
+          toast.error('No se pudo actualizar la imagen')
         }
       } catch (error) {
         console.error('Error al subir imagen:', error)
@@ -268,7 +261,7 @@ export default {
     const handleImageRemoved = async () => {
       try {
         uploadingImage.value = true
-        const ok = await authStore.updateProfile({ profile_image: null })
+        const ok = await authStore.updateProfile({ profile_image: null }, { silent: true })
         if (ok) {
           toast.info('Imagen de perfil removida')
         } else {
@@ -330,11 +323,6 @@ export default {
       }
     }
 
-    const refreshProfile = () => {
-      loadProfile()
-      toast.info('Datos del perfil actualizados')
-    }
-
     const getRoleText = (role) => {
       return role === 'admin' ? 'Administrador' : 'Usuario'
     }
@@ -388,7 +376,6 @@ export default {
       uploadingImage,
       updatingField,
       updateSuccess,
-      showSuccessToast,
       editingField,
       userProfileImage,
       handleSubmit,
@@ -397,7 +384,6 @@ export default {
       editField,
       cancelEdit,
       handleFieldUpdate,
-      refreshProfile,
       getRoleText,
       formatDate,
       getStatusClass,
