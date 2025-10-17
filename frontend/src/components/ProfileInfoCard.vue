@@ -1,8 +1,8 @@
 <template>
-  <div class="profile-info-card">
+  <div :class="['profile-info-card', variant]">
     <div class="card-header">
-      <div class="card-icon">
-        <i :class="icon"></i>
+      <div class="card-icon" v-if="iconComponent">
+        <component :is="iconComponent" :style="iconStyle" />
       </div>
       <div class="card-title">
         <h3>{{ title }}</h3>
@@ -32,39 +32,38 @@
 </template>
 
 <script>
+import { computed } from 'vue'
+import { ICONS } from '@/constants/icons'
+
 export default {
   name: 'ProfileInfoCard',
   props: {
-    title: {
-      type: String,
-      required: true
-    },
-    subtitle: {
-      type: String,
-      default: null
-    },
-    value: {
-      type: String,
-      default: ''
-    },
-    description: {
-      type: String,
-      default: null
-    },
-    icon: {
-      type: String,
-      required: true
-    },
-    editable: {
-      type: Boolean,
-      default: false
-    },
-    loading: {
-      type: Boolean,
-      default: false
-    }
+    title: { type: String, required: true },
+    subtitle: { type: String, default: null },
+    value: { type: String, default: '' },
+    description: { type: String, default: null },
+    icon: { type: String, default: null },
+    iconColor: { type: String, default: '#3b82f6' },
+    variant: { type: String, default: '' },
+    editable: { type: Boolean, default: false },
+    loading: { type: Boolean, default: false }
   },
-  emits: ['edit']
+  emits: ['edit'],
+  setup(props) {
+    const iconComponent = computed(() => {
+      return props.icon ? ICONS[props.icon] || null : null
+    })
+    const iconStyle = computed(() => {
+      const size = '40px'
+      return {
+        width: size,
+        height: size,
+        color: props.iconColor,
+        display: 'inline-block'
+      }
+    })
+    return { iconComponent, iconStyle }
+  }
 }
 </script>
 
@@ -110,14 +109,22 @@ export default {
 }
 
 .card-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, #eff6ff, #dbeafe);
+  width: auto;
+  height: auto;
+  border-radius: 0;
+  background: transparent;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  padding: 0;
+}
+
+.card-icon svg {
+  width: 100%;
+  height: 100%;
+  fill: currentColor;
+  stroke: none;
 }
 
 .card-icon i {
@@ -198,35 +205,19 @@ export default {
 }
 
 /* Variantes de color para diferentes tipos de información */
-.profile-info-card.email .card-icon {
-  background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
-}
-
-.profile-info-card.email .card-icon i {
+.profile-info-card.email .card-icon svg {
   color: #0ea5e9;
 }
 
-.profile-info-card.role .card-icon {
-  background: linear-gradient(135deg, #fef3c7, #fde68a);
-}
-
-.profile-info-card.role .card-icon i {
+.profile-info-card.role .card-icon svg {
   color: #f59e0b;
 }
 
-.profile-info-card.status .card-icon {
-  background: linear-gradient(135deg, #ecfdf5, #d1fae5);
-}
-
-.profile-info-card.status .card-icon i {
+.profile-info-card.status .card-icon svg {
   color: #10b981;
 }
 
-.profile-info-card.login .card-icon {
-  background: linear-gradient(135deg, #f3e8ff, #e9d5ff);
-}
-
-.profile-info-card.login .card-icon i {
+.profile-info-card.login .card-icon svg {
   color: #8b5cf6;
 }
 
@@ -246,7 +237,8 @@ export default {
     height: 40px;
   }
   
-  .card-icon i {
+  .card-icon i,
+  .card-icon svg {
     font-size: 18px;
   }
   

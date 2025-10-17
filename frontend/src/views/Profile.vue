@@ -43,7 +43,7 @@
             title="Email"
             subtitle="Dirección de correo electrónico"
             :value="form.email"
-            icon="fas fa-envelope"
+            icon="email"
             :editable="true"
             @edit="editField('email')"
           />
@@ -52,7 +52,7 @@
             title="Teléfono"
             subtitle="Número de teléfono"
             :value="form.phone"
-            icon="fas fa-phone"
+            icon="phone"
             :editable="true"
             @edit="editField('phone')"
           />
@@ -61,7 +61,7 @@
             title="Rol"
             subtitle="Nivel de acceso en el sistema"
             :value="getRoleText(authStore.user?.role)"
-            icon="fas fa-user-shield"
+            icon="role"
             :editable="false"
           />
           <ProfileInfoCard
@@ -69,7 +69,7 @@
             title="Estado"
             subtitle="Estado de la cuenta"
             :value="authStore.user?.is_active ? 'Activo' : 'Inactivo'"
-            icon="fas fa-check-circle"
+            icon="status"
             :editable="false"
           />
           <ProfileInfoCard
@@ -77,7 +77,7 @@
             title="Último Login"
             subtitle="Última vez que accedió"
             :value="formatDate(authStore.user?.last_login)"
-            icon="fas fa-clock"
+            icon="login"
             :editable="false"
           />
         </div>
@@ -407,31 +407,6 @@ export default {
   padding: 0;
 }
 
-/* Breadcrumbs */
-.breadcrumbs {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 24px 32px 16px;
-  font-size: 14px;
-  color: #64748b;
-}
-
-.breadcrumb-item {
-  font-weight: 500;
-  transition: color 0.2s ease;
-}
-
-.breadcrumb-item.active {
-  color: #3b82f6;
-  font-weight: 600;
-}
-
-.breadcrumb-separator {
-  font-size: 12px;
-  color: #cbd5e1;
-}
-
 /* Header del perfil */
 .profile-header {
   padding: 0 32px 0px;
@@ -454,11 +429,10 @@ export default {
 }
 
 .profile-info-header {
-  margin-top: 14px;
+  margin-top: 20px;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 16px;
+  gap: 8px;
 }
 
 .profile-name {
@@ -485,7 +459,7 @@ export default {
 .status-badge {
   display: inline-flex;
   align-items: center;
-  padding: 6px 12px;
+  padding: 2px 4px;
   border-radius: 20px;
   font-size: 14px;
   font-weight: 600;

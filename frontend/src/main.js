@@ -10,6 +10,7 @@ import App from './App.vue'
 import router from './router'
 import './style.css'
 import './styles/variables.css'
+import { Icon as AppIcon } from './constants/icons';
 
 const app = createApp(App)
 
@@ -18,6 +19,7 @@ for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
   app.component(key, component)
 }
 
+app.component('Icon', AppIcon);
 app.use(createPinia())
 app.use(router)
 app.use(ElementPlus)
