@@ -20,3 +20,13 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- Comentario: Las tablas se crearán automáticamente cuando se ejecute la aplicación
 -- gracias a la sincronización de Sequelize en modo desarrollo
+
+-- Asegurar columna `phone` en la tabla `users` para nuevas instalaciones (Postgres)
+ALTER TABLE IF EXISTS users
+ADD COLUMN IF NOT EXISTS phone VARCHAR(255);
+
+-- Nota para SQLite (migración manual):
+-- SQLite no soporta ADD COLUMN IF NOT EXISTS en versiones antiguas.
+-- Para añadir la columna en una base de datos SQLite existente ejecute:
+--   ALTER TABLE users ADD COLUMN phone VARCHAR(255);
+-- Si su base de datos está en producción, haga backup antes de ejecutar migraciones.
