@@ -15,14 +15,6 @@
         </div>
       </div>
       <div class="header-right">
-        <h2 class="order-stats-title">Estadísticas de Pedidos</h2>
-        <div class="period-selector">
-          <select v-model="orderStatsPeriod" class="period-dropdown">
-            <option value="monthly">Mensual</option>
-            <option value="weekly">Semanal</option>
-            <option value="daily">Diario</option>
-          </select>
-        </div>
       </div>
     </div>
 
@@ -66,7 +58,12 @@
           <div class="chart-header">
             <h3 class="chart-title">Ingresos Mensuales</h3>
             <div class="chart-actions">
-              <button class="chart-btn" @click="refreshChart">
+              <button 
+                class="chart-btn refresh-button" 
+                :class="{ rotating: isRefreshing }"
+                @click="refreshBarChart"
+                :disabled="isRefreshing"
+              >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M21 2v6h-6"></path>
                   <path d="M3 12a9 9 0 0 1 15-6.7L21 8"></path>
@@ -78,6 +75,7 @@
           </div>
           <div class="chart-content">
             <BarChart 
+              ref="barChartRef"
               :data="monthlyData" 
               :width="400" 
               :height="200"
@@ -93,21 +91,12 @@
       <div class="donut-section">
         <div class="chart-card">
           <div class="chart-header">
-            <h3 class="chart-title">Estadísticas de Pedidos</h3>
-            <div class="chart-actions">
-              <button class="chart-btn" @click="refreshChart">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M21 2v6h-6"></path>
-                  <path d="M3 12a9 9 0 0 1 15-6.7L21 8"></path>
-                  <path d="M3 22v-6h6"></path>
-                  <path d="M21 12a9 9 0 0 1-15 6.7L3 16"></path>
-                </svg>
-              </button>
-            </div>
+            <h3 class="chart-title">Métodos de Pago</h3>
           </div>
           <div class="chart-content">
             <DonutChart 
-              :data="orderStatsChartData" 
+              ref="donutChartRef"
+              :data="paymentMethodsChartData" 
               :size="200"
               :loading="loading"
               @segment-click="handleSegmentClick"
@@ -199,7 +188,6 @@ export default {
     
     // Reactive data
     const selectedPeriod = ref('monthly')
-    const orderStatsPeriod = ref('monthly')
     const loading = ref(false)
     
     const overview = reactive({
@@ -212,10 +200,11 @@ export default {
     
     const monthlyData = ref([])
     
-    const orderStatsData = reactive({
-      completed: { count: 0, percentage: 0 },
-      processing: { count: 0, percentage: 0 },
-      cancelled: { count: 0, percentage: 0 }
+    const paymentMethodsData = reactive({
+      cash: { count: 0, percentage: 0 },
+      card: { count: 0, percentage: 0 },
+      transfer: { count: 0, percentage: 0 },
+      mercadopago: { count: 0, percentage: 0 }
     })
     
     const recentActivities = ref([])
@@ -227,14 +216,43 @@ export default {
       return new Intl.NumberFormat('en-US').format(num)
     }
     
+    // Update period for all components
     const updatePeriod = () => {
+      console.log('📅 Período cambiado a:', selectedPeriod.value)
       fetchDashboardData()
     }
 
-    const refreshChart = () => {
-      console.log('Chart refreshed')
-      // Implement actual chart refresh logic here if needed
+    // Referencias a los componentes de gráficos
+    const barChartRef = ref(null)
+    const donutChartRef = ref(null)
+    
+    // Estado para animaciones
+    const isRefreshing = ref(false)
+    
+    // Función para refrescar solo el BarChart
+    const refreshBarChart = async () => {
+      if (isRefreshing.value) return
+      
+      console.log('🔄 Refrescando BarChart...')
+      isRefreshing.value = true
+      
+      try {
+        // Refrescar solo el BarChart
+        if (barChartRef.value && barChartRef.value.refreshChart) {
+          barChartRef.value.refreshChart()
+        }
+        
+        // Pequeño delay para mostrar la animación
+        setTimeout(() => {
+          isRefreshing.value = false
+        }, 600)
+        
+      } catch (error) {
+        console.error('Error al refrescar BarChart:', error)
+        isRefreshing.value = false
+      }
     }
+    
 
     const handleBarClick = (data) => {
       console.log('Bar chart clicked:', data)
@@ -263,56 +281,90 @@ export default {
         console.log('🔐 Estado de autenticación:', {
           isAuthenticated: authStore.isAuthenticated,
           user: authStore.user,
-          firebaseUser: authStore.firebaseUser
+          firebaseUser: authStore.firebaseUser,
+          initialized: authStore.initialized
         })
+        
+        // Esperar a que la autenticación se inicialice
+        if (!authStore.initialized) {
+          console.log('⏳ Esperando inicialización de autenticación...')
+          await new Promise(resolve => setTimeout(resolve, 500))
+        }
         
         // Verificar autenticación antes de hacer llamadas
         if (!authStore.isAuthenticated || !authStore.firebaseUser) {
-          console.log('❌ Usuario no autenticado, redirigiendo...')
-          throw new Error('Usuario no autenticado')
+          console.log('❌ Usuario no autenticado, pero intentando cargar datos de todas formas')
+          console.log('🔐 Estado actual:', {
+            isAuthenticated: authStore.isAuthenticated,
+            user: authStore.user,
+            firebaseUser: authStore.firebaseUser,
+            initialized: authStore.initialized
+          })
+          // Continuar con la carga de datos incluso sin autenticación
+          console.log('⚠️ Intentando cargar datos sin autenticación')
         }
         
-        // Verificar que el token esté disponible
-        try {
-          const token = await authStore.firebaseUser.getIdToken()
-          console.log('🔑 Token obtenido:', token ? 'Sí' : 'No')
-        } catch (tokenError) {
-          console.log('❌ Error al obtener token:', tokenError)
-          throw new Error('No se pudo obtener el token de autenticación')
+        // Verificar que el token esté disponible (solo si hay usuario autenticado)
+        if (authStore.firebaseUser) {
+          try {
+            const token = await authStore.firebaseUser.getIdToken()
+            console.log('🔑 Token obtenido:', token ? 'Sí' : 'No')
+          } catch (tokenError) {
+            console.log('❌ Error al obtener token:', tokenError)
+            console.log('⚠️ Continuando sin token válido')
+          }
+        } else {
+          console.log('⚠️ No hay usuario Firebase, continuando sin token')
         }
         
         // Fetch overview data
         console.log('📊 Obteniendo datos de overview...')
-        const overviewRes = await api.get(`/dashboard/overview?period=${selectedPeriod.value}`)
-        console.log('📊 Respuesta overview:', overviewRes.data)
+        try {
+          const overviewRes = await api.get(`/dashboard/overview?period=${selectedPeriod.value}`)
+          console.log('📊 Respuesta overview:', overviewRes.data)
         if (overviewRes.data.success) {
           Object.assign(overview, overviewRes.data.overview)
-          console.log('✅ Overview cargado:', overviewRes.data.overview)
-        } else {
-          console.log('❌ Overview falló:', overviewRes.data)
+            console.log('✅ Overview cargado:', overviewRes.data.overview)
+          } else {
+            console.log('❌ Overview falló:', overviewRes.data)
+          }
+        } catch (overviewError) {
+          console.log('❌ Error al cargar overview:', overviewError.message)
+          console.log('⚠️ Continuando con datos por defecto')
         }
         
         // Fetch monthly sales
         console.log('📈 Obteniendo datos mensuales...')
-        const monthlyRes = await api.get('/dashboard/monthly-sales')
-        console.log('📈 Respuesta mensual:', monthlyRes.data)
-        if (monthlyRes.data.success) {
+        try {
+          const monthlyRes = await api.get('/dashboard/monthly-sales')
+          console.log('📈 Respuesta mensual:', monthlyRes.data)
+          if (monthlyRes.data.success && monthlyRes.data.monthlyData) {
           monthlyData.value = monthlyRes.data.monthlyData
-          console.log('✅ Datos mensuales cargados:', monthlyRes.data.monthlyData.length, 'meses')
-          console.log('📊 Datos mensuales:', monthlyRes.data.monthlyData)
-          
-          // Si no hay datos, crear datos de ejemplo para mostrar el gráfico
-          if (monthlyRes.data.monthlyData.length === 0) {
-            console.log('⚠️ No hay datos mensuales, creando datos de ejemplo')
+            console.log('✅ Datos mensuales cargados:', monthlyRes.data.monthlyData.length, 'meses')
+            console.log('📊 Datos mensuales:', monthlyRes.data.monthlyData)
+            
+            // Si no hay datos, crear datos de ejemplo para mostrar el gráfico
+            if (monthlyRes.data.monthlyData.length === 0) {
+              console.log('⚠️ No hay datos mensuales, creando datos de ejemplo')
+              const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
+              monthlyData.value = monthNames.map(month => ({
+                month,
+                revenue: 0
+              }))
+            }
+          } else {
+            console.log('❌ Datos mensuales fallaron o están vacíos:', monthlyRes.data)
+            // Crear datos de ejemplo para evitar gráfico roto
             const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
             monthlyData.value = monthNames.map(month => ({
               month,
               revenue: 0
             }))
           }
-        } else {
-          console.log('❌ Datos mensuales fallaron:', monthlyRes.data)
-          // Crear datos vacíos para evitar gráfico roto
+        } catch (monthlyError) {
+          console.log('❌ Error al cargar datos mensuales:', monthlyError.message)
+          console.log('⚠️ Creando datos de ejemplo para el gráfico')
+          // Crear datos de ejemplo para evitar gráfico roto
           const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
           monthlyData.value = monthNames.map(month => ({
             month,
@@ -320,30 +372,45 @@ export default {
           }))
         }
         
-        // Fetch order stats
-        console.log('📋 Obteniendo estadísticas de pedidos...')
-        const orderRes = await api.get('/dashboard/order-stats')
-        if (orderRes.data.success) {
-          Object.assign(orderStatsData, orderRes.data.orderStats)
-          console.log('✅ Estadísticas de pedidos cargadas:', orderRes.data.orderStats)
+        // Fetch payment methods
+        console.log('💳 Obteniendo métodos de pago...')
+        try {
+          const paymentRes = await api.get('/dashboard/payment-methods')
+          if (paymentRes.data.success) {
+            Object.assign(paymentMethodsData, paymentRes.data.paymentMethods)
+            console.log('✅ Métodos de pago cargados:', paymentRes.data.paymentMethods)
+          }
+        } catch (paymentError) {
+          console.log('❌ Error al cargar métodos de pago:', paymentError.message)
+          console.log('⚠️ Continuando con datos por defecto')
         }
         
         // Social sources section removed as requested
         
         // Fetch activities
         console.log('⚡ Obteniendo actividades recientes...')
-        const activitiesRes = await api.get('/dashboard/activities')
+        try {
+          const activitiesRes = await api.get('/dashboard/activities')
         if (activitiesRes.data.success) {
           recentActivities.value = activitiesRes.data.activities
-          console.log('✅ Actividades cargadas:', activitiesRes.data.activities.length, 'actividades')
+            console.log('✅ Actividades cargadas:', activitiesRes.data.activities.length, 'actividades')
+          }
+        } catch (activitiesError) {
+          console.log('❌ Error al cargar actividades:', activitiesError.message)
+          console.log('⚠️ Continuando con datos por defecto')
         }
         
         // Fetch best products
         console.log('🏆 Obteniendo productos más vendidos...')
-        const productsRes = await api.get('/dashboard/best-products')
+        try {
+          const productsRes = await api.get('/dashboard/best-products')
         if (productsRes.data.success) {
           bestProducts.value = productsRes.data.bestProducts
-          console.log('✅ Productos más vendidos cargados:', productsRes.data.bestProducts.length, 'productos')
+            console.log('✅ Productos más vendidos cargados:', productsRes.data.bestProducts.length, 'productos')
+          }
+        } catch (productsError) {
+          console.log('❌ Error al cargar productos:', productsError.message)
+          console.log('⚠️ Continuando con datos por defecto')
         }
         
         console.log('🎉 Dashboard cargado completamente con datos reales')
@@ -351,7 +418,7 @@ export default {
         // Redraw charts
         await nextTick()
         
-        } catch (error) {
+      } catch (error) {
           console.error('❌ Error al cargar datos del dashboard:', error)
           console.error('❌ Detalles del error:', {
             message: error.message,
@@ -360,70 +427,62 @@ export default {
           })
           
           // Manejo específico de errores de autenticación
-          if (error.message === 'Usuario no autenticado' || error.message === 'No se pudo obtener el token de autenticación') {
-            console.log('🔐 Usuario no autenticado, el router se encargará de la redirección')
-            // NO redirigir manualmente - dejar que el router maneje
-            return
-          }
-          
           if (error.response?.status === 401) {
-            console.log('🔐 Token expirado o inválido, forzando logout...')
-            // Solo hacer logout, el router se encargará de la redirección
-            await authStore.logout()
-            return
+            console.log('🔐 Token expirado o inválido, pero no forzando logout automático')
+            // Solo mostrar datos vacíos, no redirigir automáticamente
+            console.log('⚠️ Mostrando dashboard con datos vacíos debido a error de autenticación')
+          } else {
+            console.log('⚠️ Error de conexión o servidor, mostrando datos vacíos')
           }
           
           // NO volver a datos hardcodeados - mantener arrays vacíos
           console.log('⚠️ Manteniendo datos vacíos debido a error')
-          
-          // Mostrar mensaje de error al usuario
-          if (error.response?.status === 403) {
-            console.log('🚫 Error de permisos - acceso denegado')
-          } else {
-            console.log('⚠️ Error de conexión o servidor')
-          }
-        } finally {
-          loading.value = false
-        }
+      } finally {
+        loading.value = false
+      }
     }
     
     // Computed properties
-    const orderStatsChartData = computed(() => {
+    const paymentMethodsChartData = computed(() => {
       // Asegurar que siempre hay datos válidos para evitar errores en el gráfico
-      const completed = orderStatsData.completed?.count || 0
-      const processing = orderStatsData.processing?.count || 0
-      const cancelled = orderStatsData.cancelled?.count || 0
-      const completedPercentage = orderStatsData.completed?.percentage || 0
-      const processingPercentage = orderStatsData.processing?.percentage || 0
-      const cancelledPercentage = orderStatsData.cancelled?.percentage || 0
+      const cash = paymentMethodsData.cash?.count || 0
+      const card = paymentMethodsData.card?.count || 0
+      const transfer = paymentMethodsData.transfer?.count || 0
+      const mercadopago = paymentMethodsData.mercadopago?.count || 0
+      const cashPercentage = paymentMethodsData.cash?.percentage || 0
+      const cardPercentage = paymentMethodsData.card?.percentage || 0
+      const transferPercentage = paymentMethodsData.transfer?.percentage || 0
+      const mercadopagoPercentage = paymentMethodsData.mercadopago?.percentage || 0
       
       return [
         {
-          label: 'Completados',
-          value: completed,
-          percentage: completedPercentage,
+          label: 'Efectivo',
+          value: cash,
+          percentage: cashPercentage,
           color: '#10B981'
         },
         {
-          label: 'En Proceso',
-          value: processing,
-          percentage: processingPercentage,
+          label: 'Tarjeta',
+          value: card,
+          percentage: cardPercentage,
           color: '#F59E0B'
         },
         {
-          label: 'Cancelados',
-          value: cancelled,
-          percentage: cancelledPercentage,
+          label: 'Transferencia',
+          value: transfer,
+          percentage: transferPercentage,
           color: '#EF4444'
+        },
+        {
+          label: 'Mercado Pago',
+          value: mercadopago,
+          percentage: mercadopagoPercentage,
+          color: '#8B5CF6'
         }
       ]
     })
     
     // Watchers para debugging
-    watch(monthlyData, (newData) => {
-      console.log('📊 monthlyData cambió:', newData)
-    }, { deep: true })
-    
     watch(loading, (newLoading) => {
       console.log('⏳ loading cambió:', newLoading)
     })
@@ -431,26 +490,39 @@ export default {
     // Lifecycle
     onMounted(async () => {
       console.log('🚀 Dashboard montado, iniciando carga de datos...')
+      
+      // Esperar a que la autenticación esté inicializada
+      let attempts = 0
+      while (!authStore.initialized && attempts < 10) {
+        console.log(`⏳ Esperando autenticación... intento ${attempts + 1}`)
+        await new Promise(resolve => setTimeout(resolve, 100))
+        attempts++
+      }
+      
+      // SIEMPRE intentar cargar datos, independientemente del estado de autenticación
+      console.log('📊 Cargando datos del dashboard...')
       await fetchDashboardData()
     })
     
     return {
       selectedPeriod,
-      orderStatsPeriod,
       loading,
       overview,
       monthlyData,
-      orderStatsData,
+      paymentMethodsData,
       recentActivities,
       bestProducts,
       formatNumber,
       updatePeriod,
-      refreshChart,
+      refreshBarChart,
       handleBarClick,
       handleBarHover,
       handleSegmentClick,
       handleSegmentHover,
-      orderStatsChartData
+      paymentMethodsChartData,
+      barChartRef,
+      donutChartRef,
+      isRefreshing
     }
   }
 }
@@ -558,6 +630,9 @@ export default {
   font-size: 14px;
   color: #64748b;
   margin-bottom: 10px;
+  line-height: 1.4;
+  max-width: 280px;
+  font-weight: 400;
 }
 
 .order-stats-title {
@@ -802,9 +877,10 @@ export default {
 .chart-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   width: 100%;
-  margin-bottom: 16px;
+  margin-bottom: 24px;
+  padding-bottom: 8px;
 }
 
 .chart-title {
@@ -859,10 +935,43 @@ export default {
   transform: rotate(180deg);
 }
 
+/* Animaciones para botones de refresh */
+.refresh-button {
+  transition: all 0.3s ease;
+}
+
+.refresh-button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.refresh-button:active {
+  transform: scale(0.95);
+}
+
+.refresh-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.refresh-button.rotating {
+  animation: spin 0.6s ease-in-out;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .chart-content {
   width: 100%;
   max-width: 400px;
   height: 200px;
+  margin-top: 8px;
 }
 
 .bar-chart {

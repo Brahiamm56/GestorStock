@@ -17,13 +17,20 @@
                 <span class="user-name">{{ authStore.user?.name }}</span>
                 <span class="user-role">{{ authStore.user?.role || 'Usuario' }}</span>
               </div>
-              <button @click="authStore.logout" class="logout-btn">
+              <button v-if="!showLobbyButton" @click="handleLogout" class="logout-btn">
                 <svg class="logout-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
                   <polyline points="16,17 21,12 16,7"></polyline>
                   <line x1="21" y1="12" x2="9" y2="12"></line>
                 </svg>
                 <span>Cerrar Sesión</span>
+              </button>
+              <button v-else @click="goToLobby" class="lobby-btn">
+                <svg class="lobby-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                  <polyline points="9,22 9,12 15,12 15,22"></polyline>
+                </svg>
+                <span>Salir al Lobby</span>
               </button>
             </div>
           </div>
@@ -72,7 +79,27 @@
 
 <script setup>
 import { useAuthStore } from '@/stores/auth'
-import { computed } from 'vue'
+import { computed, onMounted, ref } from 'vue'
+
+// Inicializar autenticación al montar el layout
+onMounted(async () => {
+  const authStore = useAuthStore()
+  
+  // Solo inicializar si no está ya inicializado
+  if (!authStore.initialized) {
+    console.log('🔄 MainLayout - Inicializando autenticación...')
+    try {
+      await authStore.verifyToken()
+      console.log('✅ MainLayout - Autenticación inicializada')
+    } catch (error) {
+      console.error('❌ MainLayout - Error al inicializar autenticación:', error)
+      // No hacer logout automático, solo marcar como inicializado
+      console.log('⚠️ MainLayout - Continuando sin autenticación válida')
+    }
+  } else {
+    console.log('✅ MainLayout - Autenticación ya inicializada')
+  }
+})
 
 // Icons as components
 const DataBoard = {
@@ -108,6 +135,7 @@ const Setting = {
 }
 
 const authStore = useAuthStore()
+const showLobbyButton = ref(false)
 
 const navigationItems = [
   { path: '/dashboard', label: 'Dashboard', icon: DataBoard },
@@ -115,6 +143,17 @@ const navigationItems = [
   { path: '/sales', label: 'Ventas', icon: ShoppingCart },
   { path: '/profile', label: 'Perfil', icon: Setting }
 ]
+
+// Función para manejar el logout
+const handleLogout = async () => {
+  await authStore.logout()
+  showLobbyButton.value = true
+}
+
+// Función para ir al lobby
+const goToLobby = () => {
+  window.location.href = '/login'
+}
 
 const getUserInitials = () => {
   const name = authStore.user?.name || 'U'
@@ -243,6 +282,33 @@ const getUserInitials = () => {
 }
 
 .logout-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.lobby-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  color: #22c55e;
+  padding: 10px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.lobby-btn:hover {
+  background: rgba(34, 197, 94, 0.2);
+  border-color: rgba(34, 197, 94, 0.4);
+  transform: translateY(-1px);
+}
+
+.lobby-icon {
   width: 18px;
   height: 18px;
 }
