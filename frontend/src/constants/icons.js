@@ -1,10 +1,11 @@
 import { h, defineComponent } from 'vue'
-import { Message, Phone, User, Location, InfoFilled, Clock } from '@element-plus/icons-vue'
+import { Message, Phone, User, Location, InfoFilled, Clock, List } from '@element-plus/icons-vue'
 
 export const ICONS = {
+  name: User,
   email: Message,
   phone: Phone,
-  role: User,
+  role: List,
   address: Location,
   status: InfoFilled,
   login: Clock

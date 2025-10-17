@@ -39,6 +39,15 @@
         </h2>
         <div class="info-grid">
           <ProfileInfoCard
+            class="name"
+            title="Nombre"
+            subtitle="Nombre completo"
+            :value="form.name"
+            icon="name"
+            :editable="true"
+            @edit="editField('name')"
+          />
+          <ProfileInfoCard
             class="email"
             title="Email"
             subtitle="Dirección de correo electrónico"
