@@ -167,7 +167,6 @@ export default {
 
 .card-actions {
   display: flex;
-  justify-content: flex-end;
 }
 
 .edit-btn {
@@ -182,7 +181,6 @@ export default {
   transition: all 0.2s ease;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
 }
 
 .edit-btn:hover:not(:disabled) {
