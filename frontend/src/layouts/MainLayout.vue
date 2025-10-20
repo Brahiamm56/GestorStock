@@ -142,6 +142,10 @@ const getUserInitials = () => {
   padding: 0;
   height: 80px;
   z-index: 100;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
 }
 
 .header-content {
@@ -259,6 +263,7 @@ const getUserInitials = () => {
 .main-content-wrapper {
   display: flex;
   flex: 1;
+  margin-top: 80px; /* Compensar el header fijo */
 }
 
 /* Sidebar Styles */
@@ -268,6 +273,10 @@ const getUserInitials = () => {
   color: var(--sidebar-text);
   display: flex;
   flex-direction: column;
+  position: sticky;
+  top: 80px; /* altura del header */
+  height: calc(100vh - 80px);
+  overflow: auto;
 }
 
 .sidebar-header {

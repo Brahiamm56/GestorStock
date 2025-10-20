@@ -897,9 +897,6 @@ export default {
   margin-bottom: 32px;
   box-shadow: var(--header-shadow);
   border: 1px solid var(--border-light);
-  position: sticky;
-  top: 0;
-  z-index: 100;
 }
 
 .header-content h1.page-title {

@@ -1200,9 +1200,6 @@ export default {
   margin-bottom: 2rem;
   box-shadow: var(--header-shadow);
   border: 1px solid var(--border-light);
-  position: sticky;
-  top: 0;
-  z-index: var(--z-sticky);
 }
 
 .header-content {
