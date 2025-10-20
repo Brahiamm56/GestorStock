@@ -51,7 +51,7 @@
 
     <div class="sidebar-footer">
       <div class="user-info">
-        <el-avatar :size="32" :src="authStore.user?.photoURL">
+        <el-avatar :size="32" :src="authStore.user?.profile_image">
           {{ authStore.user?.name?.charAt(0) }}
         </el-avatar>
         <div v-if="!uiStore.sidebarCollapsed" class="user-details">

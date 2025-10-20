@@ -11,7 +11,8 @@
           <div class="header-right">
             <div class="user-info">
               <div class="user-avatar">
-                <span class="user-initials">{{ getUserInitials() }}</span>
+                <img v-if="authStore.user?.profile_image" :src="authStore.user.profile_image" alt="avatar" class="avatar-img" />
+                <span v-else class="user-initials">{{ getUserInitials() }}</span>
               </div>
               <div class="user-details">
                 <span class="user-name">{{ authStore.user?.name }}</span>
@@ -192,6 +193,7 @@ const getUserInitials = () => {
   align-items: center;
   justify-content: center;
   border: 3px solid rgba(255, 255, 255, 0.2);
+  overflow: hidden;
 }
 
 .user-initials {
@@ -199,6 +201,12 @@ const getUserInitials = () => {
   font-weight: 700;
   font-size: 18px;
   font-family: 'Inter', sans-serif;
+}
+
+.avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .user-details {
