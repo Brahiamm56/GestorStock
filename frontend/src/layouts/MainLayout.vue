@@ -236,9 +236,8 @@ const getUserInitials = () => {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: var(--accent-color);
+  background: #ffeadd;
+  border: 0px;
   padding: 10px 16px;
   border-radius: 8px;
   cursor: pointer;
@@ -249,9 +248,7 @@ const getUserInitials = () => {
 }
 
 .logout-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
-  border-color: rgba(255, 255, 255, 0.3);
-  transform: translateY(-1px);
+  background: rgb(243, 210, 188);
 }
 
 .logout-icon {
