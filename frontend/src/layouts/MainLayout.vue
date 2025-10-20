@@ -325,9 +325,22 @@ const getUserInitials = () => {
 }
 
 .nav-item:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: var(--accent-color);
-  transform: translateX(4px);
+  background: rgba(14,165,233,0.06);
+  color: #1e90ff;
+  box-shadow: 0 6px 18px rgba(14,165,233,0.08);
+  transform: none;
+}
+
+.nav-item:hover::before {
+  content: '';
+  position: absolute;
+  left: -16px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 32px;
+  background: rgba(30,144,255,0.95);
+  border-radius: 0 4px 4px 0;
 }
 
 .nav-item.active {
