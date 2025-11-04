@@ -884,15 +884,10 @@ export default {
   margin-bottom: 32px;
   box-shadow: var(--header-shadow);
   border: 1px solid var(--border-light);
-<<<<<<< HEAD
-=======
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  /* position: sticky;
-  top: 0; */
   z-index: 100;
->>>>>>> b3531816d62e289bf92a4b6e07b17a2594ba0187
 }
 
 .header-content {

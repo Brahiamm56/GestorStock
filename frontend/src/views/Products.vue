@@ -1166,22 +1166,21 @@ export default {
 
 /* Header */
 .page-header {
-<<<<<<< HEAD
   background: var(--bg-white);
   border-radius: 16px;
   padding: 24px 32px;
   margin-bottom: 2rem;
   box-shadow: var(--header-shadow);
   border: 1px solid var(--border-light);
-}
-
-.header-content {
-=======
->>>>>>> b3531816d62e289bf92a4b6e07b17a2594ba0187
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .page-title {

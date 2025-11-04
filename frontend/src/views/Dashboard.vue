@@ -595,11 +595,8 @@ export default {
   border-radius: 16px;
   box-shadow: var(--header-shadow);
   border: 1px solid var(--border-light);
-<<<<<<< HEAD
   position: relative;
-=======
   z-index: var(--z-sticky);
->>>>>>> b3531816d62e289bf92a4b6e07b17a2594ba0187
   overflow: hidden;
 }
 
