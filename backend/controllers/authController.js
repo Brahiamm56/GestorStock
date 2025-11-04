@@ -45,8 +45,16 @@ const authController = {
           profile_image: null
         });
       } else {
-        // Actualizar último login
-        await user.update({ last_login: new Date() });
+        // Actualizar último login usando update directo para evitar bloqueos
+        try {
+          await User.update(
+            { last_login: new Date() },
+            { where: { id: user.id } }
+          );
+        } catch (updateError) {
+          console.warn('Warning: No se pudo actualizar last_login:', updateError.message);
+          // Continuar sin fallar si no se puede actualizar last_login
+        }
       }
 
       // Responder con el objeto user

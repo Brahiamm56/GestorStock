@@ -252,4 +252,3 @@ export default {
     font-size: 15px;
   }
 }
-</style>

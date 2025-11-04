@@ -78,13 +78,28 @@ export const useAuthStore = defineStore('auth', () => {
   // Verificar token con el backend (intenta refrescar cuando expire)
   const verifyToken = async () => {
     try {
-      // Si no hay usuario firebase conocido, intentar rehidratar y no forzar signOut aún
+      console.log('🔐 Verificando token...')
+      
+      // Si no hay usuario firebase conocido, intentar cargar desde storage
       if (!auth.currentUser && !firebaseUser.value) {
-        // intentar rehidratar desde storage, pero igualmente marcar initialized más abajo
+        console.log('⚠️ No hay usuario Firebase, intentando cargar desde storage...')
+        loadFromStorage()
+        
+        // Si hay datos en storage, mantener la sesión
+        if (user.value) {
+          console.log('✅ Usuario encontrado en storage, manteniendo sesión')
+          initialized.value = true
+          return
+        }
       }
 
       const idToken = await getFreshToken(true, 1) // force refresh + 1 retry
       if (!idToken) {
+        console.log('⚠️ No se pudo obtener token, pero manteniendo sesión si hay datos en storage')
+        if (user.value) {
+          initialized.value = true
+          return
+        }
         initialized.value = true
         return
       }
@@ -98,9 +113,9 @@ export const useAuthStore = defineStore('auth', () => {
 
       user.value = response.data.user
       saveToStorage()
+      console.log('✅ Token verificado y usuario actualizado')
     } catch (error) {
-      // manejar casos conocidos sin forzar signOut inmediato (mejor UX)
-      console.error('Error al verificar token:', error)
+      console.error('❌ Error al verificar token:', error)
 
       const resStatus = error?.response?.status
       const resData = error?.response?.data
@@ -125,22 +140,26 @@ export const useAuthStore = defineStore('auth', () => {
         }
       }
 
-      // Si no hay usuario firebase activo -> limpiar estado (usuario desconectado)
-      if (!auth.currentUser) {
+      // NO limpiar el usuario inmediatamente - mantener sesión si hay datos en storage
+      console.log('⚠️ Error en verificación, pero manteniendo sesión si hay datos en storage')
+      
+      // Solo limpiar si realmente no hay datos válidos en storage
+      if (!user.value) {
+        console.log('❌ No hay datos en storage, limpiando sesión')
         user.value = null
+        firebaseUser.value = null
         saveToStorage()
       } else {
-        // No limpiar inmediatamente para evitar logout visible; guardar null temporalmente
-        user.value = null
-        saveToStorage()
-      }
-
-      // Si el token claramente inválido, cerrar sesión en Firebase para limpiar estado
-      if (resStatus === 401 && (!resData || resData.code === 'TOKEN_EXPIRED')) {
-        try { await signOut(auth) } catch (_) { /* ignore */ }
+        console.log('✅ Manteniendo sesión con datos de storage')
       }
     } finally {
+      // Siempre marcar como inicializado
       initialized.value = true
+      console.log('✅ Autenticación inicializada:', {
+        hasUser: !!user.value,
+        hasFirebaseUser: !!firebaseUser.value,
+        isAuthenticated: !!user.value
+      })
     }
   }
 
@@ -148,6 +167,7 @@ export const useAuthStore = defineStore('auth', () => {
   onAuthStateChanged(auth, async (fbUser) => {
     try {
       if (fbUser) {
+        console.log('🔥 Usuario Firebase detectado:', fbUser.uid)
         // evitar shadowing: usar firebaseUser ref
         firebaseUser.value = fbUser
         // Cargar user desde storage de forma inmediata para UX
@@ -155,17 +175,34 @@ export const useAuthStore = defineStore('auth', () => {
         // Verificar token con backend (forzar token fresco)
         await verifyToken()
       } else {
+        console.log('🔥 Usuario Firebase desconectado')
+        // NO limpiar inmediatamente - mantener sesión si hay datos en storage
         firebaseUser.value = null
-        user.value = null
-        saveToStorage()
+        
+        // Solo limpiar si no hay datos válidos en storage
+        if (!user.value) {
+          console.log('❌ No hay datos en storage, limpiando sesión')
+          user.value = null
+          saveToStorage()
+        } else {
+          console.log('✅ Manteniendo sesión con datos de storage')
+        }
+        
         initialized.value = true
       }
     } catch (err) {
-      console.error('Error en onAuthStateChanged:', err)
-      // asegurar que no queda estado inconsistente
+      console.error('❌ Error en onAuthStateChanged:', err)
+      // NO limpiar inmediatamente - mantener sesión si hay datos en storage
       firebaseUser.value = null
-      user.value = null
-      saveToStorage()
+      
+      if (!user.value) {
+        console.log('❌ No hay datos en storage, limpiando sesión')
+        user.value = null
+        saveToStorage()
+      } else {
+        console.log('✅ Manteniendo sesión con datos de storage')
+      }
+      
       initialized.value = true
     }
   })

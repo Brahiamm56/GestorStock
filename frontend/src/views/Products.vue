@@ -1,31 +1,18 @@
 <template>
   <div class="products-admin-page" :class="{ 'sidebar-open': sidebarOpen }">
-    <!-- Header Principal con Sombra -->
+    <!-- Header Principal -->
     <div class="page-header">
-      <div class="header-content">
-        <div class="header-left">
-          <h1 class="page-title">Productos</h1>
-          <p class="page-subtitle">Administra tu catálogo de productos</p>
-        </div>
-        <button class="add-product-btn" @click="openSidebar">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          Nuevo Producto
-        </button>
-      </div>
+      <h1 class="page-title">Productos en Stock</h1>
+      <button class="add-product-btn" @click="openSidebar">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Nuevo Producto
+      </button>
     </div>
 
-    <!-- Sistema de Filtros con Header -->
+    <!-- Sistema de Filtros -->
     <div class="filters-section">
-      <div class="filters-header">
-        <h3 class="filters-title">Filtros y Búsqueda</h3>
-        <div class="filters-actions">
-          <button class="clear-filters-btn" @click="clearFilters" v-if="hasActiveFilters">
-            Limpiar Filtros
-          </button>
-        </div>
-      </div>
       <div class="filters-container">
         <!-- Barra de Búsqueda -->
         <div class="search-container">
@@ -52,21 +39,6 @@
             </option>
           </select>
         </div>
-
-        <!-- Filtro por Nombre -->
-        <button 
-          class="filter-btn"
-          :class="{ 'active': sortBy === 'name' }"
-          @click="toggleSort('name')"
-          title="Ordenar por nombre"
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          Nombre
-        </button>
 
         <!-- Filtro por Precio -->
         <button 
@@ -1188,12 +1160,13 @@ export default {
 <style scoped>
 .products-admin-page {
   padding: 2rem;
-  background: var(--bg-cream-primary);
+  background: #f8fafc;
   min-height: 100vh;
 }
 
 /* Header */
 .page-header {
+<<<<<<< HEAD
   background: var(--bg-white);
   border-radius: 16px;
   padding: 24px 32px;
@@ -1203,30 +1176,20 @@ export default {
 }
 
 .header-content {
+=======
+>>>>>>> b3531816d62e289bf92a4b6e07b17a2594ba0187
   display: flex;
   justify-content: space-between;
   align-items: center;
-}
-
-.header-left {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  margin-bottom: 2rem;
 }
 
 .page-title {
   font-size: 2.5rem;
   font-weight: 700;
-  color: var(--text-primary);
+  color: #333333;
   margin: 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-}
-
-.page-subtitle {
-  font-size: 1rem;
-  color: var(--text-secondary);
-  margin: 0;
-  font-weight: 500;
+  font-family: 'Helvetica Neue', Arial, sans-serif;
 }
 
 .add-product-btn {
@@ -1234,7 +1197,7 @@ export default {
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem 1.5rem;
-  background: linear-gradient(135deg, #FFB6C1 0%, #FFA07A 100%);
+  background: linear-gradient(135deg, #000000 0%, #afa2a2 100%);
   color: white;
   border: none;
   border-radius: 12px;
@@ -1251,58 +1214,12 @@ export default {
 
 /* Filtros */
 .filters-section {
-  background: var(--bg-white);
+  background: white;
   border-radius: 16px;
+  padding: 1.5rem;
   margin-bottom: 2rem;
-  box-shadow: var(--shadow-lg);
-  border: 1px solid var(--border-light);
-  overflow: hidden;
-}
-
-.filters-header {
-  background: var(--bg-white);
-  padding: 20px 24px;
-  border-bottom: 1px solid var(--border-light);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.filters-title {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin: 0;
-}
-
-.filters-actions {
-  display: flex;
-  gap: 12px;
-}
-
-.clear-filters-btn {
-  padding: 8px 16px;
-  background: var(--bg-cream-secondary);
-  border: 1px solid var(--border-light);
-  border-radius: 8px;
-  color: var(--text-secondary);
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.clear-filters-btn:hover {
-  background: var(--border-light);
-  color: var(--text-primary);
-}
-
-.filters-container {
-  padding: 24px;
-  display: flex;
-  gap: 1rem;
-  align-items: center;
-  flex-wrap: wrap;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e5e7eb;
 }
 
 .filters-container {
@@ -1399,8 +1316,8 @@ export default {
 }
 
 .filter-btn.warning {
-  border-color: #f59e0b;
-  color: #f59e0b;
+  border-color: #e5e7eb;
+  color: #6b7280;
 }
 
 .filter-btn.warning:hover,
@@ -1411,8 +1328,8 @@ export default {
 }
 
 .filter-btn.reload {
-  border-color: #10b981;
-  color: #10b981;
+  border-color: #e5e7eb;
+  color: #6b7280;
 }
 
 .filter-btn.reload:hover {

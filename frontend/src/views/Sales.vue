@@ -53,19 +53,6 @@
             <div class="metric-label">Ingresos Totales</div>
           </div>
         </div>
-        
-        <div class="metric-card pending-card">
-          <div class="metric-icon pending-icon">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-              <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M12 6V12L16 14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </div>
-          <div class="metric-info">
-            <div class="metric-number">{{ stats.pendingSales }}</div>
-            <div class="metric-label">Pendientes</div>
-          </div>
-        </div>
       </div>
     </div>
       
@@ -897,6 +884,24 @@ export default {
   margin-bottom: 32px;
   box-shadow: var(--header-shadow);
   border: 1px solid var(--border-light);
+<<<<<<< HEAD
+=======
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  /* position: sticky;
+  top: 0; */
+  z-index: 100;
+>>>>>>> b3531816d62e289bf92a4b6e07b17a2594ba0187
+}
+
+.header-content {
+  flex: 1;
+}
+
+.new-sale-btn {
+  margin-top: 10px;
+  margin-right: 70px;
 }
 
 .header-content h1.page-title {
@@ -923,7 +928,7 @@ export default {
   color: rgb(27, 27, 27);
   border: none;
   border-radius: 12px;
-  padding: 14px 24px;
+  padding: 12px 20px;
   font-family: 'Inter', sans-serif;
   font-weight: 600;
   font-size: 15px;
@@ -935,7 +940,7 @@ export default {
 .new-sale-btn:hover:not(:disabled) {
   transform: translateY(-2px);
   box-shadow: var(--shadow-medium);
-  background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+  background: linear-gradient(135deg, #dbd9d9 0%, #808594 100%);
 }
 
 .new-sale-btn:disabled {
@@ -1010,10 +1015,6 @@ export default {
   background: linear-gradient(90deg, var(--cyan), #0891b2);
 }
 
-.pending-card::before {
-  background: linear-gradient(90deg, var(--success-green), #059669);
-}
-
 .metric-icon {
   width: 56px;
   height: 56px;
@@ -1037,11 +1038,6 @@ export default {
 .revenue-icon {
   background: rgba(6, 182, 212, 0.1);
   color: var(--cyan);
-}
-
-.pending-icon {
-  background: rgba(16, 185, 129, 0.1);
-  color: var(--success-green);
 }
 
 .metric-info {
