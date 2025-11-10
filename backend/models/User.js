@@ -25,14 +25,6 @@ const User = sequelize.define('User', {
     type: DataTypes.STRING,
     allowNull: false
   },
-  phone: {
-    type: DataTypes.STRING,
-    allowNull: true,
-    validate: {
-      // allow empty or simple phone pattern (basic validation)
-      is: /^[0-9+()\s-]{6,20}$/i
-    }
-  },
   role: {
     type: DataTypes.ENUM('admin', 'user'),
     defaultValue: 'user',

@@ -231,7 +231,7 @@ const getUserInitials = () => {
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  background: linear-gradient(135deg, #000000, #8b5cf6);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -337,91 +337,122 @@ const getUserInitials = () => {
   display: flex;
   flex-direction: column;
   position: sticky;
-  top: 80px; /* altura del header */
+  top: 80px;
   height: calc(100vh - 80px);
   overflow: auto;
+  border-right: 2px solid #e5e7eb;
+  box-shadow: 2px 0 12px rgba(0, 0, 0, 0.05);
 }
 
 .sidebar-header {
   padding: 32px 24px 24px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 2px solid #f1f5f9;
+  background: linear-gradient(135deg, #ffffff 0%, #fafbfc 100%);
 }
 
 .sidebar-logo {
   display: flex;
   align-items: center;
   gap: 12px;
+  padding: 12px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  transition: all 0.3s ease;
+}
+
+.sidebar-logo:hover {
+  transform: translateX(4px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
 }
 
 .logo-icon {
   width: 32px;
   height: 32px;
-  color: var(--accent-color);
+  color: white;
+  flex-shrink: 0;
 }
 
 .logo-text {
-  color: var(--accent-color);
+  color: white;
   font-family: 'Inter', sans-serif;
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 700;
+  letter-spacing: -0.5px;
 }
 
 .sidebar-nav {
-  padding: 24px 0;
+  padding: 24px 12px;
   flex: 1;
 }
 
 .nav-item {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 16px 24px;
-  margin: 0 16px 8px;
-  border-radius: 12px;
-  color: var(--accent-color);
+  gap: 14px;
+  padding: 14px 16px;
+  margin-bottom: 8px;
+  border-radius: 10px;
+  color: #6b7280;
   text-decoration: none;
   font-family: 'Inter', sans-serif;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 500;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
+  border: 2px solid transparent;
+  cursor: pointer;
 }
 
+/* Hover state - efecto suave */
 .nav-item:hover {
-  background: rgba(14,165,233,0.06);
-  color: #1e90ff;
-  box-shadow: 0 6px 18px rgba(14,165,233,0.08);
-  transform: none;
+  background: rgba(59, 130, 246, 0.08);
+  color: #000000;
+  border-left-color: #000000;
+  transform: translateX(4px);
 }
 
-.nav-item:hover::before {
+.nav-item:hover::after {
   content: '';
   position: absolute;
-  left: -16px;
+  right: 0;
   top: 50%;
   transform: translateY(-50%);
-  width: 4px;
-  height: 32px;
-  background: rgba(30,144,255,0.95);
-  border-radius: 0 4px 4px 0;
+  width: 3px;
+  height: 24px;
+  background: linear-gradient(180deg, rgba(59, 130, 246, 0) 0%, #000000 50%, rgba(59, 130, 246, 0) 100%);
+  border-radius: 3px 0 0 3px;
 }
 
+/* Estado activo - más prominente */
 .nav-item.active {
-  background: white;
-  color: #3b82f6;
-  box-shadow: 0 4px 20px rgba(59, 130, 246, 0.3);
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.12) 0%, rgba(59, 130, 246, 0.06) 100%);
+  color: #070707;
+  border: 2px solid #070707;
+  box-shadow: inset 0 2px 8px rgba(59, 130, 246, 0.1), 0 4px 12px rgba(59, 130, 246, 0.15);
+  font-weight: 600;
 }
 
 .nav-item.active::before {
   content: '';
   position: absolute;
-  left: -16px;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: linear-gradient(180deg, #000000 0%, #000000 100%);
+  border-radius: 0 4px 4px 0;
+}
+
+.nav-item.active::after {
+  content: '';
+  position: absolute;
+  right: 0;
   top: 50%;
   transform: translateY(-50%);
-  width: 4px;
-  height: 32px;
-  background: #3b82f6;
-  border-radius: 0 4px 4px 0;
+  width: 3px;
+  height: 28px;
+  background: linear-gradient(180deg, rgba(59, 130, 246, 0) 0%, #030303 50%, rgba(59, 130, 246, 0) 100%);
+  border-radius: 3px 0 0 3px;
 }
 
 .nav-icon {
@@ -430,6 +461,18 @@ const getUserInitials = () => {
   justify-content: center;
   width: 24px;
   height: 24px;
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+}
+
+.nav-item:hover .nav-icon {
+  transform: scale(1.1);
+  color: #000000;
+}
+
+.nav-item.active .nav-icon {
+  color: #020202;
+  transform: scale(1.15);
 }
 
 .nav-icon svg {
@@ -438,7 +481,8 @@ const getUserInitials = () => {
 }
 
 .nav-text {
-  font-weight: 600;
+  font-weight: 500;
+  flex: 1;
 }
 
 /* Main Content Area */

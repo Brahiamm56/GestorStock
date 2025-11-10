@@ -596,7 +596,7 @@ export default {
   box-shadow: var(--header-shadow);
   border: 1px solid var(--border-light);
   position: relative;
-  z-index: var(--z-sticky);
+  z-index: 1;
   overflow: hidden;
 }
 

@@ -95,6 +95,13 @@ const productController = {
         image_url
       } = req.body;
 
+      // Validar campos requeridos
+      if (!name || !sku || !price || stock_quantity === undefined || !category) {
+        return res.status(400).json({ 
+          error: 'Faltan campos requeridos: name, sku, price, stock_quantity, category' 
+        });
+      }
+
       // Validar categoría
       const validCategories = ['ENVASES', 'DECORACIÓN', 'SAHUMERIOS'];
       if (!validCategories.includes(category)) {
@@ -107,6 +114,12 @@ const productController = {
       const existingProduct = await Product.findOne({ where: { sku } });
       if (existingProduct) {
         return res.status(409).json({ error: 'El SKU ya existe' });
+      }
+
+      // Validar que req.user exista
+      if (!req.user || !req.user.uid) {
+        console.error('Error: req.user no está configurado:', req.user);
+        return res.status(401).json({ error: 'Usuario no autenticado' });
       }
 
       // Buscar el usuario en la base de datos o crear uno temporal
@@ -143,7 +156,7 @@ const productController = {
       });
     } catch (error) {
       console.error('Error al crear producto:', error);
-      res.status(500).json({ error: 'Error interno del servidor' });
+      res.status(500).json({ error: 'Error interno del servidor', details: error.message });
     }
   },
 

@@ -559,7 +559,6 @@ export default {
                             productForm.price > 0 && 
                             productForm.stock_quantity >= 0 && 
                             productForm.category &&
-                            !skuExists.value &&
                             !Object.values(formErrors).some(error => error)
       
       // In edit mode, also require changes to be made
@@ -1022,11 +1021,14 @@ export default {
           skuExists.value = true
           formErrors.sku = 'Este SKU ya existe'
         } else {
+          // Reset to false if not found locally
+          // Server-side validation will catch duplicates anyway
           skuExists.value = false
           formErrors.sku = ''
         }
       } catch (error) {
         console.error('Error checking SKU:', error)
+        skuExists.value = false
       } finally {
         skuChecking.value = false
       }
@@ -1160,7 +1162,7 @@ export default {
 <style scoped>
 .products-admin-page {
   padding: 2rem;
-  background: #f8fafc;
+  background: var(--bg-cream-primary);
   min-height: 100vh;
 }
 
