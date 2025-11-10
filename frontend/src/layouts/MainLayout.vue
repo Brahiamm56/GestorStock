@@ -163,6 +163,7 @@ const getUserInitials = () => {
 </script>
 
 <style scoped>
+/* Updated: Warm color scheme 2024 */
 .main-layout {
   min-height: 100vh;
   background: var(--bg-primary);
@@ -287,7 +288,7 @@ const getUserInitials = () => {
 }
 
 .logout-btn:hover {
-  background: rgb(243, 210, 188);
+  background: rgba(53, 21, 0, 0.151);
 }
 
 .logout-icon {
@@ -332,7 +333,7 @@ const getUserInitials = () => {
 /* Sidebar Styles */
 .sidebar {
   width: 280px;
-  background: var(--sidebar-bg);
+  background: linear-gradient(180deg, #fffbf5 0%, #ffffff 100%) !important;
   color: var(--sidebar-text);
   display: flex;
   flex-direction: column;
@@ -340,40 +341,43 @@ const getUserInitials = () => {
   top: 80px;
   height: calc(100vh - 80px);
   overflow: auto;
-  border-right: 2px solid #e5e7eb;
-  box-shadow: 2px 0 12px rgba(0, 0, 0, 0.05);
+  border-right: 3px solid #fed7aa !important;
+  box-shadow: 4px 0 16px rgba(234, 88, 12, 0.08) !important;
 }
 
 .sidebar-header {
-  padding: 32px 24px 24px;
-  border-bottom: 2px solid #f1f5f9;
-  background: linear-gradient(135deg, #ffffff 0%, #fafbfc 100%);
+  padding: 32px 24px 24px !important;
+  border-bottom: 2px solid #fed7aa !important;
+  background: linear-gradient(135deg, #fffbf5 0%, #fff7ed 100%) !important;
 }
 
 .sidebar-logo {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #ecd2b6 0%, #ecd2b6 100%) !important;
+  border: 2px solid #fbbf24 !important;
+  box-shadow: 0 4px 16px rgba(234, 88, 12, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
   transition: all 0.3s ease;
 }
 
 .sidebar-logo:hover {
-  transform: translateX(4px);
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+  transform: translateX(4px) translateY(-2px);
+  box-shadow: 0 6px 20px rgba(251, 146, 60, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  border-color: #fcd34d;
 }
 
 .logo-icon {
   width: 32px;
   height: 32px;
-  color: white;
+  color: rgba(0, 0, 0, 0.055);
   flex-shrink: 0;
 }
 
 .logo-text {
-  color: white;
+  color: rgb(27, 0, 0);
   font-family: 'Inter', sans-serif;
   font-size: 18px;
   font-weight: 700;
@@ -405,10 +409,11 @@ const getUserInitials = () => {
 
 /* Hover state - efecto suave */
 .nav-item:hover {
-  background: rgba(59, 130, 246, 0.08);
-  color: #000000;
-  border-left-color: #000000;
+  background: linear-gradient(135deg, rgba(251, 146, 60, 0.10) 0%, rgba(252, 211, 77, 0.08) 100%) !important;
+  color: #2b0f00 !important;
+  border-left: 3px solid #000000 !important;
   transform: translateX(4px);
+  box-shadow: 0 2px 8px rgba(234, 88, 12, 0.1) !important;
 }
 
 .nav-item:hover::after {
@@ -417,18 +422,18 @@ const getUserInitials = () => {
   right: 0;
   top: 50%;
   transform: translateY(-50%);
-  width: 3px;
-  height: 24px;
-  background: linear-gradient(180deg, rgba(59, 130, 246, 0) 0%, #000000 50%, rgba(59, 130, 246, 0) 100%);
-  border-radius: 3px 0 0 3px;
+  width: 4px;
+  height: 26px;
+  background: linear-gradient(180deg, rgba(249, 115, 22, 0) 0%, #f97316 50%, rgba(249, 115, 22, 0) 100%);
+  border-radius: 4px 0 0 4px;
 }
 
 /* Estado activo - más prominente */
 .nav-item.active {
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.12) 0%, rgba(59, 130, 246, 0.06) 100%);
-  color: #070707;
-  border: 2px solid #070707;
-  box-shadow: inset 0 2px 8px rgba(59, 130, 246, 0.1), 0 4px 12px rgba(59, 130, 246, 0.15);
+  background: linear-gradient(135deg, rgba(251, 146, 60, 0.12) 0%, rgba(252, 211, 77, 0.06) 100%) !important;
+  color: #ea580c !important;
+  border: 2px solid #fb923c !important;
+  box-shadow: inset 0 2px 8px rgba(234, 88, 12, 0.15), 0 4px 16px rgba(234, 88, 12, 0.2) !important;
   font-weight: 600;
 }
 
@@ -438,9 +443,10 @@ const getUserInitials = () => {
   left: 0;
   top: 0;
   bottom: 0;
-  width: 4px;
-  background: linear-gradient(180deg, #000000 0%, #000000 100%);
+  width: 5px;
+  background: linear-gradient(180deg, #fb923c 0%, #f97316 100%);
   border-radius: 0 4px 4px 0;
+  box-shadow: 2px 0 8px rgba(234, 88, 12, 0.4);
 }
 
 .nav-item.active::after {
@@ -449,10 +455,10 @@ const getUserInitials = () => {
   right: 0;
   top: 50%;
   transform: translateY(-50%);
-  width: 3px;
-  height: 28px;
-  background: linear-gradient(180deg, rgba(59, 130, 246, 0) 0%, #030303 50%, rgba(59, 130, 246, 0) 100%);
-  border-radius: 3px 0 0 3px;
+  width: 4px;
+  height: 32px;
+  background: linear-gradient(180deg, rgba(234, 88, 12, 0) 0%, #ea580c 50%, rgba(234, 88, 12, 0) 100%);
+  border-radius: 4px 0 0 4px;
 }
 
 .nav-icon {
@@ -466,13 +472,14 @@ const getUserInitials = () => {
 }
 
 .nav-item:hover .nav-icon {
-  transform: scale(1.1);
-  color: #000000;
+  transform: scale(1.1) rotate(5deg);
+  color: #ea580c;
 }
 
 .nav-item.active .nav-icon {
-  color: #020202;
+  color: #f97316;
   transform: scale(1.15);
+  filter: drop-shadow(0 2px 4px rgba(234, 88, 12, 0.3));
 }
 
 .nav-icon svg {

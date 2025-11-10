@@ -10,15 +10,15 @@ import {
 import { toast } from 'vue3-toastify'
 import api from '@/services/api'
 
-// Configuración de Firebase (reemplazar si corresponde)
+// Configuración de Firebase desde variables de entorno
 const firebaseConfig = {
-  apiKey: "AIzaSyAvDYFche6vtuJ43d7_LGdXdKnRBkyPG-M",
-  authDomain: "gestor-stock-192ae.firebaseapp.com",
-  projectId: "gestor-stock-192ae",
-  storageBucket: "gestor-stock-192ae.firebasestorage.app",
-  messagingSenderId: "335669416990",
-  appId: "1:335669416990:web:66196c9d188d88831d4a0f",
-  measurementId: "G-QCC5Q8H6H5"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 }
 
 // Inicializar Firebase
