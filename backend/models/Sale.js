@@ -12,13 +12,20 @@ const Sale = sequelize.define('Sale', {
     allowNull: false,
     unique: true
   },
+  customer_id: {
+    type: DataTypes.UUID,
+    allowNull: true,
+    comment: 'Relación con tabla customers'
+  },
   customer_dni: {
     type: DataTypes.STRING,
-    allowNull: true
+    allowNull: true,
+    comment: 'Campo legacy - mantener por compatibilidad'
   },
   customer_name: {
     type: DataTypes.STRING,
-    allowNull: false
+    allowNull: true,
+    comment: 'Campo legacy - mantener por compatibilidad'
   },
   total_amount: {
     type: DataTypes.DECIMAL(10, 2),

@@ -18,15 +18,25 @@ api.interceptors.request.use(
     console.log('🔍 Full URL:', config.baseURL + config.url)
     
     const auth = getAuth()
-    const user = auth.currentUser
+    let user = auth.currentUser
+    
+    // Si no hay usuario, esperar un poco por si Firebase está inicializándose
+    if (!user) {
+      console.log('⏳ Esperando inicialización de Firebase...')
+      await new Promise(resolve => setTimeout(resolve, 500))
+      user = auth.currentUser
+    }
     
     if (user) {
       try {
         const token = await user.getIdToken()
         config.headers.Authorization = `Bearer ${token}`
+        console.log('✅ Token agregado al request')
       } catch (error) {
-        console.error('Error al obtener token:', error)
+        console.error('❌ Error al obtener token:', error)
       }
+    } else {
+      console.log('⚠️ No hay usuario autenticado')
     }
     
     return config

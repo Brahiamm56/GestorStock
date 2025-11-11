@@ -10,6 +10,9 @@ import App from './App.vue'
 import router from './router'
 import './style.css'
 import './styles/variables.css'
+import './styles/design-system.css'
+import './styles/components.css'
+import './styles/animations.css'
 import { Icon as AppIcon } from './constants/icons';
 
 const app = createApp(App)

@@ -530,10 +530,10 @@ export default {
 
 <style scoped>
 .sales-dashboard {
-  padding: 32px;
-  background: var(--bg-cream-primary);
+  padding: var(--space-8);
+  background: var(--background-secondary);
   min-height: 100vh;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: var(--font-sans);
   position: relative;
   animation: fadeInUp 0.8s ease-out;
 }
@@ -589,12 +589,12 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 32px;
-  background: var(--bg-white);
-  padding: 24px 32px;
-  border-radius: 16px;
-  box-shadow: var(--header-shadow);
-  border: 1px solid var(--border-light);
+  margin-bottom: var(--space-8);
+  background: var(--background);
+  padding: var(--space-6) var(--space-8);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color);
   position: relative;
   z-index: 1;
   overflow: hidden;
@@ -607,7 +607,7 @@ export default {
   left: 0;
   right: 0;
   height: 4px;
-  background: linear-gradient(90deg, #8b5cf6, #3b82f6, #10b981);
+  background: var(--gradient-primary);
 }
 
 .header-left, .header-right {
@@ -617,23 +617,19 @@ export default {
 }
 
 .dashboard-title {
-  font-size: 32px;
-  font-weight: 700;
-  color: #1e293b;
+  font-size: var(--text-3xl);
+  font-weight: var(--font-bold);
+  color: var(--text-primary);
   margin: 0;
-  background: linear-gradient(135deg, #1e293b 0%, #475569 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
 }
 
 .dashboard-subtitle {
-  font-size: 14px;
-  color: #64748b;
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
   margin-bottom: 10px;
-  line-height: 1.4;
+  line-height: var(--leading-normal);
   max-width: 280px;
-  font-weight: 400;
+  font-weight: var(--font-normal);
 }
 
 .order-stats-title {
@@ -657,26 +653,26 @@ export default {
 
 .period-dropdown {
   padding: 10px 16px;
-  border: 2px solid #e2e8f0;
-  border-radius: 8px;
-  background: white;
-  font-size: 14px;
-  color: #374151;
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  background: var(--background);
+  font-size: var(--text-sm);
+  color: var(--text-primary);
   cursor: pointer;
-  font-weight: 500;
-  transition: all 0.3s ease;
+  font-weight: var(--font-medium);
+  transition: all var(--transition-base);
   min-width: 120px;
 }
 
 .period-dropdown:hover {
-  border-color: #8b5cf6;
-  box-shadow: 0 2px 8px rgba(139, 92, 246, 0.1);
+  border-color: var(--primary);
+  box-shadow: 0 2px 8px rgba(234, 88, 12, 0.1);
 }
 
 .period-dropdown:focus {
   outline: none;
-  border-color: #8b5cf6;
-  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.1);
   transform: translateY(-1px);
 }
 
@@ -690,12 +686,15 @@ export default {
 
 /* Revenue Section */
 .revenue-section {
-  background: var(--bg-white);
-  border-radius: 16px;
-  padding: 32px;
-  box-shadow: var(--shadow-lg);
-  border: 1px solid var(--border-light);
-  transition: all 0.3s ease;
+  background: var(--background);
+  border-radius: var(--radius-2xl);
+  padding: var(--space-8);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: all var(--transition-slow);
   position: relative;
   overflow: hidden;
   cursor: pointer;
@@ -704,8 +703,8 @@ export default {
 
 .revenue-section:hover {
   transform: translateY(-4px);
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.2);
-  border-color: #8b5cf6;
+  box-shadow: var(--shadow-lg);
+  border-color: var(--primary);
 }
 
 .revenue-section::before {
@@ -714,8 +713,8 @@ export default {
   top: 0;
   left: 0;
   right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, #10b981, #3b82f6);
+  height: 4px;
+  background: var(--gradient-primary);
 }
 
 .revenue-card {
@@ -733,39 +732,36 @@ export default {
 }
 
 .card-title {
-  font-size: 18px;
-  font-weight: 600;
-  color: #1e293b;
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  color: var(--text-primary);
   margin: 0;
 }
 
 .card-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-xl);
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #f3f4f6;
-  color: #6b7280;
-  font-size: 20px;
+  background: linear-gradient(135deg, #FED7AA, #FDBA74);
+  color: var(--primary-dark);
+  font-size: var(--text-2xl);
 }
 
 .revenue-amount {
-  font-size: 48px;
-  font-weight: 800;
-  background: linear-gradient(135deg, #10b981 0%, #3b82f6 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  margin-bottom: 12px;
+  font-size: var(--text-5xl);
+  font-weight: var(--font-extrabold);
+  color: var(--text-primary);
+  margin-bottom: var(--space-3);
   text-align: center;
 }
 
 .revenue-period {
-  font-size: 14px;
-  color: #64748b;
-  margin-bottom: 16px;
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  margin-bottom: var(--space-4);
 }
 
 .revenue-metrics {
@@ -784,11 +780,11 @@ export default {
 }
 
 .revenue-growth.positive {
-  color: #10b981;
+  color: var(--success);
 }
 
 .revenue-growth.negative {
-  color: #ef4444;
+  color: var(--danger);
 }
 
 .growth-arrow {
@@ -810,21 +806,21 @@ export default {
 }
 
 .metric-label {
-  color: #64748b;
+  color: var(--text-secondary);
 }
 
 .metric-value {
-  font-weight: 600;
-  color: #1e293b;
+  font-weight: var(--font-semibold);
+  color: var(--text-primary);
 }
 
 /* Chart Sections */
 .chart-section, .donut-section {
-  background: var(--bg-white);
-  border-radius: 16px;
-  padding: 32px;
-  box-shadow: var(--shadow-lg);
-  border: 1px solid var(--border-light);
+  background: var(--background);
+  border-radius: var(--radius-2xl);
+  padding: var(--space-8);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
   align-items: center;

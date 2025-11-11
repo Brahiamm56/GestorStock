@@ -871,19 +871,19 @@ export default {
 
 .sales-page {
   min-height: 100%;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background-color: var(--bg-cream-primary);
-  padding: 24px;
+  font-family: var(--font-sans);
+  background-color: var(--background-secondary);
+  padding: var(--space-6);
 }
 
 /* Modern Header */
 .page-header {
-  background: var(--bg-white);
-  border-radius: 16px;
-  padding: 24px 32px;
-  margin-bottom: 32px;
-  box-shadow: var(--header-shadow);
-  border: 1px solid var(--border-light);
+  background: var(--background);
+  border-radius: var(--radius-2xl);
+  padding: var(--space-6) var(--space-8);
+  margin-bottom: var(--space-8);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color);
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
@@ -901,41 +901,41 @@ export default {
 
 .header-content h1.page-title {
   margin: 0 0 8px 0;
-  font-size: 32px;
-  font-weight: 800;
+  font-size: var(--text-3xl);
+  font-weight: var(--font-extrabold);
   color: var(--text-primary);
-  font-family: 'Inter', sans-serif;
-  line-height: 1.2;
+  font-family: var(--font-sans);
+  line-height: var(--leading-tight);
 }
 
 .page-subtitle {
   margin: 0;
   color: var(--text-secondary);
-  font-size: 16px;
-  font-weight: 500;
+  font-size: var(--text-base);
+  font-weight: var(--font-medium);
 }
 
 .new-sale-btn {
   display: flex;
   align-items: center;
-  gap: 8px;
-  background: linear-gradient(135deg, var(--primary-blue) 0%, #bd7619 100%);
-  color: rgb(27, 27, 27);
+  gap: var(--space-2);
+  background: var(--gradient-primary);
+  color: var(--text-inverse);
   border: none;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   padding: 12px 20px;
-  font-family: 'Inter', sans-serif;
-  font-weight: 600;
-  font-size: 15px;
+  font-family: var(--font-sans);
+  font-weight: var(--font-semibold);
+  font-size: var(--text-sm);
   cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: var(--shadow-light);
+  transition: all var(--transition-base);
+  box-shadow: var(--shadow-sm);
 }
 
 .new-sale-btn:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: var(--shadow-medium);
-  background: linear-gradient(135deg, #dbd9d9 0%, #808594 100%);
+  box-shadow: var(--shadow-md);
+  background: linear-gradient(135deg, #DC2626 0%, #B91C1C 100%);
 }
 
 .new-sale-btn:disabled {
@@ -963,23 +963,24 @@ export default {
 }
 
 .metric-card {
-  background: var(--background-card);
+  background: var(--background);
   border: 1px solid var(--border-color);
-  border-radius: 16px;
-  padding: 28px;
+  border-radius: var(--radius-2xl);
+  padding: var(--space-6);
   display: flex;
   align-items: center;
-  gap: 20px;
-  box-shadow: var(--shadow-light);
-  transition: all 0.3s ease;
+  gap: var(--space-5);
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-slow);
   cursor: pointer;
   position: relative;
   overflow: hidden;
 }
 
 .metric-card:hover {
-  box-shadow: var(--shadow-medium);
+  box-shadow: var(--shadow-lg);
   transform: translateY(-4px);
+  border-color: var(--primary);
 }
 
 .metric-card::before {
@@ -999,15 +1000,15 @@ export default {
 
 /* Specific card styling */
 .sales-total-card::before {
-  background: linear-gradient(90deg, var(--purple), #7c3aed);
+  background: var(--gradient-primary);
 }
 
 .sales-today-card::before {
-  background: linear-gradient(90deg, var(--pink), #db2777);
+  background: var(--gradient-success);
 }
 
 .revenue-card::before {
-  background: linear-gradient(90deg, var(--cyan), #0891b2);
+  background: var(--gradient-warning);
 }
 
 .metric-icon {
@@ -1021,18 +1022,18 @@ export default {
 }
 
 .sales-total-icon {
-  background: rgba(139, 92, 246, 0.1);
-  color: var(--purple);
+  background: linear-gradient(135deg, #FED7AA, #FDBA74);
+  color: var(--primary-dark);
 }
 
 .sales-today-icon {
-  background: rgba(236, 72, 153, 0.1);
-  color: var(--pink);
+  background: linear-gradient(135deg, #D1FAE5, #A7F3D0);
+  color: var(--success-dark);
 }
 
 .revenue-icon {
-  background: rgba(6, 182, 212, 0.1);
-  color: var(--cyan);
+  background: linear-gradient(135deg, #FEF3C7, #FDE68A);
+  color: var(--warning-dark);
 }
 
 .metric-info {
@@ -1040,21 +1041,21 @@ export default {
 }
 
 .metric-number {
-  font-family: 'Inter', sans-serif;
-  font-weight: 800;
-  font-size: 2.25rem;
+  font-family: var(--font-sans);
+  font-weight: var(--font-extrabold);
+  font-size: var(--text-4xl);
   color: var(--text-primary);
-  line-height: 1.2;
+  line-height: var(--leading-tight);
   margin-bottom: 4px;
 }
 
 .metric-label {
-  font-family: 'Inter', sans-serif;
-  font-weight: 600;
-  font-size: 0.875rem;
+  font-family: var(--font-sans);
+  font-weight: var(--font-semibold);
+  font-size: var(--text-sm);
   color: var(--text-secondary);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: var(--tracking-wide);
 }
 
 /* Enhanced Filters Section */
@@ -1063,13 +1064,13 @@ export default {
 }
 
 .filters-container {
-  background: var(--background-card);
+  background: var(--background);
   border: 1px solid var(--border-color);
-  border-radius: 16px;
-  padding: 24px;
-  box-shadow: var(--shadow-light);
+  border-radius: var(--radius-2xl);
+  padding: var(--space-6);
+  box-shadow: var(--shadow-sm);
   display: flex;
-  gap: 24px;
+  gap: var(--space-6);
   align-items: center;
   flex-wrap: wrap;
 }
@@ -1094,10 +1095,13 @@ export default {
 
 .search-input {
   width: 100%;
-  padding: 12px 16px 12px 48px;
+  padding: 10px 16px 10px 48px;
   border: 2px solid var(--border-color);
-  border-radius: 12px;
-  font-family: 'Inter', sans-serif;
+  border-radius: var(--radius-lg);
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+  background: var(--background);
   font-size: 15px;
   font-weight: 500;
   color: var(--text-primary);
@@ -1107,9 +1111,9 @@ export default {
 
 .search-input:focus {
   outline: none;
-  border-color: var(--primary-blue);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.1);
   background: white;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
 .search-input::placeholder {

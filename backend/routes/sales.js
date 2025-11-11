@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const saleController = require('../controllers/saleController');
 const { authenticateToken, requireRole } = require('../middleware/auth');
+const { validateSaleCreation } = require('../middleware/validateSale');
 
 // Todas las rutas requieren autenticación
 router.use(authenticateToken);
@@ -10,7 +11,7 @@ router.use(authenticateToken);
 router.get('/', saleController.getAllSales);
 router.get('/stats', requireRole(['admin']), saleController.getSalesStats);
 router.get('/:id', saleController.getSaleById);
-router.post('/', requireRole(['admin', 'user']), saleController.createSale);
+router.post('/', requireRole(['admin', 'user']), validateSaleCreation, saleController.createSale);
 router.get('/:id/receipt', saleController.generateReceipt);
 
 module.exports = router;

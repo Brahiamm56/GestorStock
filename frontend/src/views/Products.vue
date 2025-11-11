@@ -1161,19 +1161,19 @@ export default {
 
 <style scoped>
 .products-admin-page {
-  padding: 2rem;
-  background: var(--bg-cream-primary);
+  padding: var(--space-8);
+  background: var(--background-secondary);
   min-height: 100vh;
 }
 
 /* Header */
 .page-header {
-  background: var(--bg-white);
-  border-radius: 16px;
-  padding: 24px 32px;
-  margin-bottom: 2rem;
-  box-shadow: var(--header-shadow);
-  border: 1px solid var(--border-light);
+  background: var(--background);
+  border-radius: var(--radius-2xl);
+  padding: var(--space-6) var(--space-8);
+  margin-bottom: var(--space-8);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -1186,41 +1186,43 @@ export default {
 }
 
 .page-title {
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: #333333;
+  font-size: var(--text-3xl);
+  font-weight: var(--font-bold);
+  color: var(--text-primary);
   margin: 0;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-sans);
 }
 
 .add-product-btn {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  background: linear-gradient(135deg, #000000 0%, #afa2a2 100%);
-  color: white;
+  gap: var(--space-2);
+  padding: 12px 24px;
+  background: var(--gradient-primary);
+  color: var(--text-inverse);
   border: none;
-  border-radius: 12px;
-  font-weight: 600;
+  border-radius: var(--radius-lg);
+  font-weight: var(--font-semibold);
+  font-size: var(--text-sm);
   cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(255, 182, 193, 0.3);
+  transition: all var(--transition-base);
+  box-shadow: var(--shadow-sm);
 }
 
 .add-product-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(255, 182, 193, 0.4);
+  box-shadow: var(--shadow-md);
+  background: linear-gradient(135deg, #DC2626 0%, #B91C1C 100%);
 }
 
 /* Filtros */
 .filters-section {
-  background: white;
-  border-radius: 16px;
-  padding: 1.5rem;
-  margin-bottom: 2rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  border: 1px solid #e5e7eb;
+  background: var(--background);
+  border-radius: var(--radius-2xl);
+  padding: var(--space-6);
+  margin-bottom: var(--space-8);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color);
 }
 
 .filters-container {
@@ -1251,18 +1253,19 @@ export default {
 
 .search-input {
   width: 100%;
-  padding: 0.75rem 1rem 0.75rem 2.5rem;
-  border: 2px solid #e5e7eb;
-  border-radius: 12px;
-  font-size: 1rem;
-  background: white;
-  transition: all 0.3s ease;
+  padding: 10px 16px 10px 44px;
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  font-size: var(--text-sm);
+  background: var(--background);
+  color: var(--text-primary);
+  transition: all var(--transition-base);
   outline: none;
 }
 
 .search-input:focus {
-  border-color: #FFB6C1;
-  box-shadow: 0 0 0 3px rgba(255, 182, 193, 0.1);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.1);
 }
 
 /* Dropdown */
@@ -1272,48 +1275,49 @@ export default {
 
 .category-select {
   width: 100%;
-  padding: 0.75rem 1rem;
-  border: 2px solid #e5e7eb;
-  border-radius: 12px;
-  font-size: 1rem;
-  background: white;
+  padding: 10px 16px;
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  font-size: var(--text-sm);
+  background: var(--background);
+  color: var(--text-primary);
   cursor: pointer;
   outline: none;
-  transition: all 0.3s ease;
+  transition: all var(--transition-base);
 }
 
 .category-select:focus {
-  border-color: #FFB6C1;
-  box-shadow: 0 0 0 3px rgba(255, 182, 193, 0.1);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.1);
 }
 
 /* Botones de filtro */
 .filter-btn {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1rem;
-  background: white;
-  border: 2px solid #e5e7eb;
-  border-radius: 12px;
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: #6b7280;
+  gap: var(--space-2);
+  padding: 10px 16px;
+  background: var(--background);
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--text-secondary);
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all var(--transition-base);
   white-space: nowrap;
 }
 
 .filter-btn:hover {
-  border-color: #FFB6C1;
-  color: #FFB6C1;
+  border-color: var(--primary);
+  color: var(--primary);
   transform: translateY(-1px);
 }
 
 .filter-btn.active {
-  background: #FFB6C1;
-  border-color: #FFB6C1;
-  color: white;
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--text-inverse);
 }
 
 .filter-btn.warning {
@@ -1323,20 +1327,20 @@ export default {
 
 .filter-btn.warning:hover,
 .filter-btn.warning.active {
-  background: #f59e0b;
-  border-color: #f59e0b;
-  color: white;
+  background: var(--warning);
+  border-color: var(--warning);
+  color: var(--text-inverse);
 }
 
 .filter-btn.reload {
-  border-color: #e5e7eb;
-  color: #6b7280;
+  border-color: var(--border-color);
+  color: var(--text-secondary);
 }
 
 .filter-btn.reload:hover {
-  background: #10b981;
-  border-color: #10b981;
-  color: white;
+  background: var(--success);
+  border-color: var(--success);
+  color: var(--text-inverse);
 }
 
 /* Filtros activos */
@@ -1373,11 +1377,11 @@ export default {
 
 /* Tabla */
 .table-container {
-  background: white;
-  border-radius: 16px;
+  background: var(--background);
+  border-radius: var(--radius-2xl);
   overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  border: 1px solid #e5e7eb;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color);
   position: relative;
 }
 
@@ -1398,11 +1402,11 @@ export default {
 .loading-spinner {
   width: 40px;
   height: 40px;
-  border: 3px solid #e5e7eb;
-  border-top: 3px solid #FFB6C1;
-  border-radius: 50%;
+  border: 3px solid var(--gray-200);
+  border-top: 3px solid var(--primary);
+  border-radius: var(--radius-full);
   animation: spin 1s linear infinite;
-  margin-bottom: 1rem;
+  margin-bottom: var(--space-4);
 }
 
 @keyframes spin {
